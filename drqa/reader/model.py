@@ -283,7 +283,6 @@ class DocReader(object):
                       for e in ex[:5]]
         else:
             inputs = [e if e is None else Variable(e, requires_grad=False)
->>>>>>> 6382a147c8f4eccd69d8434962f87a73f650ad1f
                       for e in ex[:5]]
 
         # Run forward
