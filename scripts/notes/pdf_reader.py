@@ -9,13 +9,22 @@ title 			| paragraph
 import argparse
 import constants
 import csv
+import io
 import json
 import os
 import PyPDF2
-import pdftotext
+import string
 import utils
 
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfparser import PDFParser
+
 def read_pdf(file_path):
+	print("Reading", file_path)
 	file_name = utils.path_leaf(file_path)
 	if file_name[-4:] != ".pdf":
 		raise TypeError("Expecting input of pdf file")
@@ -24,15 +33,25 @@ def read_pdf(file_path):
 	title = file_name[:-4]
 
 	pdf_file_in = open(file_path, 'rb')
-	# pdf_reader = PyPDF2.PdfFileReader(pdf_file_in)
-	# num_pages = pdf_reader.numPages
-	pdf_reader = pdftotext.PDF(pdf_file_in)
+	rsrcmgr = PDFResourceManager()
+	retstr = io.StringIO()
+	laparams = LAParams()
+	device = TextConverter(rsrcmgr, retstr, laparams=laparams)
+	interpreter = PDFPageInterpreter(rsrcmgr, device)
 
-
-	# for i in range(num_pages):
-	# 	paragraphs.append(pdf_reader.getPage(i).extractText())
-	for page in pdf_reader:
-		paragraphs.append(page)
+	page_no = 0
+	for pageNumber, page in enumerate(PDFPage.get_pages(pdf_file_in)):
+		if pageNumber == page_no:
+			if pageNumber % 10:
+				print("Read page", str(pageNumber))
+			interpreter.process_page(page)
+			data = retstr.getvalue()
+			data = ''.join(x for x in data if x in string.printable)
+			if len(data) > 0:
+				paragraphs.append(data)
+			retstr.truncate(0)
+			retstr.seek(0)
+		page_no += 1
 
 	pdf_file_in.close()
 
@@ -53,7 +72,19 @@ if __name__ == "__main__":
 		try:
 			title, paragraphs = read_pdf(file_path)
 		except TypeError as e:
+			print(e)
 			continue
+
+		total = len(paragraphs)
+		read = 0.0
+
 		for p in paragraphs:
-			tsv_writer.writerow([title, p])
+			try:
+				tsv_writer.writerow([title, p])
+				read += 1
+			except UnicodeEncodeError as e:
+				print(e)
+				continue
+		print("Reading percentage of '{}': {}".format(title, read/total))
+
 	tsv_file_out.close()
