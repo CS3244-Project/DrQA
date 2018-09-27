@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # Copyright 2017-present, Facebook, Inc.
 # All rights reserved.
 #
@@ -278,10 +279,17 @@ class DocReader(object):
         # Transfer to GPU
         if self.use_cuda:
             inputs = [e if e is None else
+<<<<<<< HEAD
                       Variable(e.cuda(async=True), volatile=True)
                       for e in ex[:5]]
         else:
             inputs = [e if e is None else Variable(e, volatile=True)
+=======
+                      Variable(e.cuda(async=True), requires_grad=False)
+                      for e in ex[:5]]
+        else:
+            inputs = [e if e is None else Variable(e, requires_grad=False)
+>>>>>>> 6382a147c8f4eccd69d8434962f87a73f650ad1f
                       for e in ex[:5]]
 
         # Run forward
