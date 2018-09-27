@@ -8,8 +8,8 @@
 from setuptools import setup, find_packages
 import sys
 
-with open('README.md') as f:
-    readme = f.read()
+# with open('README.md') as f:
+#     readme = f.read()
 
 with open('LICENSE') as f:
     license = f.read()
@@ -21,7 +21,11 @@ setup(
     name='drqa',
     version='0.1.0',
     description='Reading Wikipedia to Answer Open-Domain Questions',
+<<<<<<< HEAD
     long_description=readme,
+=======
+    long_description=None,
+>>>>>>> 6382a147c8f4eccd69d8434962f87a73f650ad1f
     license=license,
     python_requires='>=3.5',
     packages=find_packages(exclude=('data')),
