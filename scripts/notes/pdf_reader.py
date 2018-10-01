@@ -12,7 +12,6 @@ import csv
 import io
 import json
 import os
-import PyPDF2
 import string
 import utils
 
