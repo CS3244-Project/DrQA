@@ -16,13 +16,13 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input', type=str)
-parser.add_argument('output', type=str)
+parser.add_argument('input', type=str) # file path to read the input from
+parser.add_argument('output', type=str) # file path to write the output to
 args = parser.parse_args()
 
 # Read dataset
 with open(args.input) as f:
-    dataset = json.load(f)
+    dataset = json.load(f)  # takes in a file and returns python object
 
 # Iterate and write question-answer pairs
 with open(args.output, 'w') as f:
@@ -31,5 +31,5 @@ with open(args.output, 'w') as f:
             for qa in paragraph['qas']:
                 question = qa['question']
                 answer = [a['text'] for a in qa['answers']]
-                f.write(json.dumps({'question': question, 'answer': answer}))
+                f.write(json.dumps({'question': question, 'answer': answer})) # python object into json
                 f.write('\n')

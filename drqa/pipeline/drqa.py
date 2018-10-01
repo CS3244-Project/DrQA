@@ -6,9 +6,9 @@
 # LICENSE file in the root directory of this source tree.
 """Full DrQA pipeline."""
 
-import torch
+import torch # PyTorch
 import regex
-import heapq
+import heapq # Priority Queue algorithms
 import math
 import time
 import logging
@@ -16,11 +16,11 @@ import logging
 from multiprocessing import Pool as ProcessPool
 from multiprocessing.util import Finalize
 
-from ..reader.vector import batchify
+from ..reader.vector import batchify # gather a batch of individual examples into one batch
 from ..reader.data import ReaderDataset, SortedBatchSampler
 from .. import reader
 from .. import tokenizers
-from . import DEFAULTS
+from . import DEFAULTS # default models
 
 logger = logging.getLogger(__name__)
 
@@ -61,17 +61,19 @@ def tokenize_text(text):
 class DrQA(object):
     # Target size for squashing short paragraphs together.
     # 0 = read every paragraph independently
+    # 2 = read 2 paragraphs together
     # infty = read all paragraphs together
     GROUP_LENGTH = 0
 
+    # TODO: How does each of the model file look like. How does an embedding file look like?
     def __init__(
             self,
             reader_model=None,
             embedding_file=None,
             tokenizer=None,
             fixed_candidates=None,
-            batch_size=128,
-            cuda=True,
+            batch_size=128, # batch size is the number of training examples used in in 1 iteration
+            cuda=True, # TODO: How does this work?
             data_parallel=False,
             max_loaders=5,
             num_workers=None,
@@ -102,15 +104,20 @@ class DrQA(object):
         self.fixed_candidates = fixed_candidates is not None
         self.cuda = cuda
 
+        # This is the model we use to rank the top N documents
+        # We can use our own model or use the default model
         logger.info('Initializing document ranker...')
         ranker_config = ranker_config or {}
         ranker_class = ranker_config.get('class', DEFAULTS['ranker'])
         ranker_opts = ranker_config.get('options', {})
         self.ranker = ranker_class(**ranker_opts)
 
+        # Same as above but for document reader
         logger.info('Initializing document reader...')
         reader_model = reader_model or DEFAULTS['reader_model']
         self.reader = reader.DocReader.load(reader_model, normalize=False)
+
+        # other optional things
         if embedding_file:
             logger.info('Expanding dictionary...')
             words = reader.utils.index_embedding_words(embedding_file)

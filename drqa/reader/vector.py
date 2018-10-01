@@ -6,8 +6,8 @@
 # LICENSE file in the root directory of this source tree.
 """Functions for putting examples into torch format."""
 
-from collections import Counter
-import torch
+from collections import Counter # dictionary of key and counter (value)
+import torch # PyTorch
 
 
 def vectorize(ex, model, single_answer=False):

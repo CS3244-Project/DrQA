@@ -10,15 +10,19 @@ import regex as re
 from html.parser import HTMLParser
 
 PARSER = HTMLParser()
-BLACKLIST = set(['23443579', '52643645'])  # Conflicting disambig. pages
+BLACKLIST = set(['23443579', '52643645'])  # Conflicting disambiguation pages
 
 
 def preprocess(article):
-    # Take out HTML escaping WikiExtractor didn't clean
+    # Take out HTML escaping that WikiExtractor didn't clean
+    # WikiExtractor is a Python script that extracts and cleans text from a Wikipedia database dump.
     for k, v in article.items():
         article[k] = PARSER.unescape(v)
 
     # Filter some disambiguation pages not caught by the WikiExtractor
+    # Disambiguation means that the article title is ambiguous
+    # For example, "Mercury" can refer to a chemical element, a planet, a Roman god, etc.
+    # Should be: Mercury (element), Mercury (planet) and Mercury (mythology)
     if article['id'] in BLACKLIST:
         return None
     if '(disambiguation)' in article['title'].lower():
@@ -26,7 +30,7 @@ def preprocess(article):
     if '(disambiguation page)' in article['title'].lower():
         return None
 
-    # Take out List/Index/Outline pages (mostly links)
+    # Take out List/Index/Outline pages (reason: mostly links)
     if re.match(r'(List of .+)|(Index of .+)|(Outline of .+)',
                 article['title']):
         return None

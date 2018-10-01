@@ -28,10 +28,18 @@ PROCESS_DB = None
 
 
 def init(tokenizer_class, tokenizer_opts, db_class, db_opts):
+    # Any variable which is changed or created inside of a function is local, 
+    # if it hasn't been declared as a global variable. To tell Python, that we 
+    # want to use the global variable, we have to explicitly state this by using 
+    # the keyword "global"
     global PROCESS_TOK, PROCESS_DB
+    # There are 4 tokenizer_class available (see drqa/tokenizers)
     PROCESS_TOK = tokenizer_class(**tokenizer_opts)
+    # TODO: What does Finalize do?
     Finalize(PROCESS_TOK, PROCESS_TOK.shutdown, exitpriority=100)
+    # TODO: Where to find db_class?
     PROCESS_DB = db_class(**db_opts)
+    # TODO: What does Finalize do?
     Finalize(PROCESS_DB, PROCESS_DB.close, exitpriority=100)
 
 

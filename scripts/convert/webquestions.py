@@ -13,26 +13,26 @@
 """
 
 import argparse
-import re
+import re # for regular expression operations
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input', type=str)
-parser.add_argument('output', type=str)
+parser.add_argument('input', type=str) # file path to read the input from
+parser.add_argument('output', type=str) # file path to write the output to
 args = parser.parse_args()
 
 # Read dataset
 with open(args.input) as f:
-    dataset = json.load(f)
+    dataset = json.load(f) # takes in a file and returns python object
 
 # Iterate and write question-answer pairs
 with open(args.output, 'w') as f:
     for ex in dataset:
         question = ex['utterance']
         answer = ex['targetValue']
-        answer = re.findall(
+        answer = re.findall( # return a non-repeating list of strings that matches the pattern
             r'(?<=\(description )(.+?)(?=\) \(description|\)\)$)', answer
         )
         answer = [a.replace('"', '') for a in answer]
-        f.write(json.dumps({'question': question, 'answer': answer}))
+        f.write(json.dumps({'question': question, 'answer': answer})) # python object into json
         f.write('\n')

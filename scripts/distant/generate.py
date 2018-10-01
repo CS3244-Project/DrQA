@@ -12,25 +12,25 @@ that can be used as a supporting context.
 
 import argparse
 import uuid
-import heapq
+import heapq # priority queue algorithms in python
 import logging
 import regex as re
 import os
 import json
-import random
+import random # to generate pseudo-random numberso
 
-from functools import partial
-from collections import Counter
+from functools import partial # create a new partial object that behaves like a function
+from collections import Counter # a dictionary with Hashables as keys and counts (int) as values
 from multiprocessing import Pool, cpu_count
 from multiprocessing.util import Finalize
 
-from nltk.tokenize import word_tokenize
-from nltk.chunk import ne_chunk
-from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize # split a string to a list of word and puctuation marks except periods
+from nltk.chunk import ne_chunk # labels words based on their Named Entities categories such as PERSON, ORGANIZATION, etc.
+from nltk.tag import pos_tag # labels words based on their Part-Of-Speech categories, such as NN (Noun), JJ (adjective), etc.
 
-from drqa import tokenizers
-from drqa import retriever
-from drqa.retriever import utils
+from drqa import tokenizers # based on drqa/tokenizers
+from drqa import retriever # based on drqa/retriever
+from drqa.retriever import utils # based on drqa/retriever/utils.py
 
 logger = logging.getLogger()
 
@@ -39,8 +39,8 @@ logger = logging.getLogger()
 # Fetch text, tokenize + annotate
 # ------------------------------------------------------------------------------
 
-PROCESS_TOK = None
-PROCESS_DB = None
+PROCESS_TOK = None # tokenizer
+PROCESS_DB = None # database
 
 
 def init(tokenizer_class, tokenizer_opts, db_class=None, db_opts=None):

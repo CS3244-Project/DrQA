@@ -9,7 +9,7 @@ import os
 from ..tokenizers import CoreNLPTokenizer
 from ..retriever import TfidfDocRanker
 from ..retriever import DocDB
-from .. import DATA_DIR
+from .. import DATA_DIR # based on drqa/__init__.py
 
 DEFAULTS = {
     'tokenizer': CoreNLPTokenizer,
@@ -23,5 +23,5 @@ def set_default(key, value):
     global DEFAULTS
     DEFAULTS[key] = value
 
-
+# TODO: Why?
 from .drqa import DrQA
