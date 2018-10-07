@@ -22,7 +22,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
 
-def read_pdf(file_path):
+def read_pdf(file_pathi, squash=True):
 	print("Reading", file_path)
 	file_name = utils.path_leaf(file_path)
 	if file_name[-4:] != ".pdf":
@@ -47,6 +47,8 @@ def read_pdf(file_path):
 			data = retstr.getvalue()
 			data = ''.join(x for x in data if x in string.printable)
 			if len(data) > 0:
+				if squash:
+					data = data.replace("\t", " ").replace("\n", " ")
 				paragraphs.append(data)
 			retstr.truncate(0)
 			retstr.seek(0)
@@ -63,7 +65,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	tsv_file_out = open(args.output, 'wt')
-	tsv_writer = csv.writer(tsv_file_out, delimiter='\t', lineterminator='\n')
+	tsv_writer = csv.writer(tsv_file_out, delimiter=',', lineterminator='\n')
 	tsv_writer.writerow(constants.note_tsv_header)
 
 	for file_path in os.listdir(args.input_dir):
