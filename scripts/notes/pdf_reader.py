@@ -22,8 +22,9 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
 
-def read_pdf(file_pathi, squash=True):
-	print("Reading", file_path)
+def read_pdf(file_path, squash=True, verbose=True):
+	if verbose:
+		print("Parsing", file_path)
 	file_name = utils.path_leaf(file_path)
 	if file_name[-4:] != ".pdf":
 		raise TypeError("Expecting input of pdf file")
@@ -41,7 +42,7 @@ def read_pdf(file_pathi, squash=True):
 	page_no = 0
 	for pageNumber, page in enumerate(PDFPage.get_pages(pdf_file_in)):
 		if pageNumber == page_no:
-			if pageNumber % 10:
+			if verbose and pageNumber % 10 == 0:
 				print("Read page", str(pageNumber))
 			interpreter.process_page(page)
 			data = retstr.getvalue()
