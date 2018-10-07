@@ -1,3 +1,4 @@
+import argparse
 import constants
 import csv
 import json
@@ -37,7 +38,7 @@ def parse_annotation(file_path, verbose=True):
 				data['data'].append(found_doc)
 			has_added_context = False
 			found_paragraph = None
-			for paragraph in found_doc["paragraph"]:
+			for paragraph in found_doc["paragraphs"]:
 				if utils.is_similar_str(paragraph["context"], context):
 					has_added_context = True
 					found_paragraph = paragraph
@@ -61,12 +62,12 @@ def parse_annotation(file_path, verbose=True):
 	csv_file_in.close()
 	return data
 
-if __name__ = "__main__":
+if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('input', type=str)
 	parser.add_argument('output', type=str)
 	args = parser.parse_args()
 
 	parsed = parse_annotation(args.input)
-	with open(output, 'w') as f:
-		json.dumps(parsed, f)
+	with open(args.output, 'w') as f:
+		json.dump(parsed, f)
