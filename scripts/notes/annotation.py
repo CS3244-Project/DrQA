@@ -47,6 +47,7 @@ def parse_annotation(file_path, verbose=True):
 					'context':context,
 					'qas': []
 				}
+				found_doc["paragraphs"].append(found_paragraph)
 			qa = {
 				'answers': [{
 				'answer_start': context.find(answer),
