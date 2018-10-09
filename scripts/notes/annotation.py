@@ -4,7 +4,7 @@ import csv
 import json
 import utils
 
-def parse_annotation(file_path, verbose=True):
+def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
 	if verbose:
 		print("Parsing", file_path)
 	file_name = utils.path_leaf(file_path)
@@ -15,13 +15,13 @@ def parse_annotation(file_path, verbose=True):
 	csv_reader = csv.reader(csv_file_in, delimiter=',')
 
 	has_started = False
-	data = {'data': []}
+	data = {'data': [], 'version': version}
 
 	for i, row in enumerate(csv_reader):
 		if verbose and i % 10 == 0:
 			print("Read row", str(i))
 		if has_started:
-			title, context, question, answer = row
+			title, context, question, answer = row[:4]
 			if len(question) == 0:
 				continue
 			has_added_title = False
@@ -57,7 +57,7 @@ def parse_annotation(file_path, verbose=True):
 				'id': utils.get_uuid()
 			}
 			found_paragraph['qas'].append(qa)
-		if row == constants.note_tsv_header:
+		if i == start_row:
 			has_started = True
 
 	csv_file_in.close()
