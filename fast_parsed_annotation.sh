@@ -1,1 +1,1 @@
-python scripts/notes/annotation.py data/notes/annotation.csv data/notes/lecture_notes.json 
+python scripts/notes/annotation.py data/notes/annotation.csv data/datasets/lecture_notes.json 
