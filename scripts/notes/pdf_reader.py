@@ -47,10 +47,9 @@ def read_pdf(file_path, squash=True, verbose=True):
 			interpreter.process_page(page)
 			data = retstr.getvalue()
 			data = ''.join(x for x in data if x in string.printable)
-			if len(data) > 0:
-				if squash:
-					data = data.replace("\t", " ").replace("\n", " ")
-				paragraphs.append(data)
+			if squash:
+				data = data.replace("\t", " ").replace("\n", " ")
+			paragraphs.append(data)
 			retstr.truncate(0)
 			retstr.seek(0)
 		page_no += 1
@@ -77,6 +76,7 @@ if __name__ == "__main__":
 			print(e)
 			continue
 
+		paragraphs = [p for p in paragraphs if len(p) > 0]
 		total = len(paragraphs)
 		read = 0.0
 

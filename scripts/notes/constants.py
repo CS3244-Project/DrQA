@@ -1,1 +1,1 @@
-note_tsv_header = ["title", "paragraph", "question", "answer"]
+note_tsv_header = ["title", "paragraph", "question", "answer", "dept"]
