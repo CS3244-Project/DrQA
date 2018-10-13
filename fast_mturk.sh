@@ -1,1 +1,1 @@
-python scripts/reader/mturk.py data/datasets/mturk_source.csv data/datasets/mturk_response.csv data/notes/ data/notes/mturk.csv
+python scripts/notes/mturk.py data/notes/mturk_source.csv data/notes/mturk_response.csv data/notes/pdfs/ data/notes/mturk.csv
