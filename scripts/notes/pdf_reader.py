@@ -12,6 +12,7 @@ import csv
 import io
 import json
 import os
+import re
 import string
 import utils
 
@@ -49,6 +50,7 @@ def read_pdf(file_path, squash=True, verbose=True):
 			data = ''.join(x for x in data if x in string.printable)
 			if squash:
 				data = data.replace("\t", " ").replace("\n", " ")
+				data = re.sub("\s\s+" , " ", data)                       
 			paragraphs.append(data)
 			retstr.truncate(0)
 			retstr.seek(0)

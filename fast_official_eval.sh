@@ -1,1 +1,1 @@
-python scripts/reader/official_eval.py data/datasets/lecture_notes.json tmp/lecture_notes-default.preds
+python scripts/reader/official_eval.py data/datasets/mturk_lecture_notes.json tmp/mturk_lecture_notes-default.preds

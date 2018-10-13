@@ -66,7 +66,7 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 	mturk_response_data = read_mturk_response(mturk_response)
 
 	pdf_urls = mturk_response_data.keys()
-	download_pdf(pdf_urls, data_dir)
+	# download_pdf(pdf_urls, data_dir)
 
 	csv_file_out = open(output, 'wt')
 	csv_writer = csv.writer(csv_file_out, delimiter=',', lineterminator='\n')
