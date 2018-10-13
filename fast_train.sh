@@ -1,0 +1,1 @@
+python scripts/reader/train.py --embedding-file glove.840B.300d.txt --tune-partial 1000 --model-dir tmp/ln_no_init --train-file ln_train-processed-corenlp.txt --dev-file ln_dev-processed-corenlp.txt --dev-json ln_dev.json --pretrained data/reader/single.mdl

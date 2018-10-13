@@ -68,27 +68,39 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 	mturk_response_data = read_mturk_response(mturk_response)
 
 	pdf_urls = mturk_response_data.keys()
-	# download_pdf(pdf_urls, data_dir)
+	download_pdf(pdf_urls, data_dir)
 
 	lecture_note_dataset = []
+	unique_questions = []
+	not_found = []
 
 	for url in pdf_urls:
 		file_name = utils.path_leaf(url)
 		file_path = data_dir + file_name
 		_, paragraphs = pdf_reader.read_pdf(file_path)
 
-		pdf_info = mturk_source_data[url]
-		print(pdf_info["dept"])
+		pdf_info = mturk_source_data[url]	
 		title, dept = pdf_info["title"], pdf_info["dept"]
 
 		for qa in mturk_response_data[url]:
 			page, question, answer = qa["page"], qa["question"], qa["answer"]
-			paragraph = ""
-			for p in paragraphs:
-				if answer.lower() in p.lower():
-					paragraph = p
-			lecture_note_dataset.append([title, paragraph, question, answer, dept])
-
+			if question not in unique_questions:			
+				answer = utils.normalize(answer)
+				annotated_p = utils.normalize(paragraphs[int(page)-1])
+				if answer in annotated_p:
+					lecture_note_dataset.append([title, annotated_p, question, answer, dept])
+					unique_questions.append(question)
+				else:
+					for p in paragraphs:
+						p = utils.normalize(p)	
+						if answer in p:	
+							lecture_note_dataset.append([title, p, question, answer, dept])
+							unique_questions.append(question)
+							break
+					not_found.append([title, question, answer])
+	for i in not_found[:5]:
+		print(i)	
+	raise Exception()
 	return lecture_note_dataset
 
 if __name__ == "__main__":
