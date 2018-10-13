@@ -4,7 +4,7 @@ import csv
 import json
 import utils
 
-def parse_annotation(file_path, start_row=2, verbose=True, version='1.1'):
+def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
 	if verbose:
 		print("Parsing annotation", file_path)
 
@@ -44,9 +44,10 @@ def parse_annotation(file_path, start_row=2, verbose=True, version='1.1'):
 					'qas': []
 				}
 				found_doc["paragraphs"].append(found_paragraph)
+			answer_start = context.lower().find(answer.lower())
 			qa = {
 				'answers': [{
-				'answer_start': context.find(answer),
+				'answer_start': answer_start,
 				'text': answer
 				}],
 				'question': question,

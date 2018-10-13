@@ -1,1 +1,1 @@
-python scripts/notes/annotation.py data/notes/annotation.csv data/datasets/lecture_notes.json 
+python scripts/notes/annotation.py data/notes/mturk_cleaned.csv data/datasets/mturk_cleaned_lecture_notes.json 
