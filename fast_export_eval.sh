@@ -1,1 +1,1 @@
-python scripts/notes/export_official_eval.py tmp/ln-default.preds data/notes/mturk_eval.csv
+python scripts/notes/export_official_eval.py data/datasets/ln.json tmp/ln-default.preds data/notes/mturk_eval.csv

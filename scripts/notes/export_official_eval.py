@@ -74,7 +74,7 @@ def evaluate(dataset, predictions):
                 _f1 = metric_max_over_ground_truths(
                     f1_score, prediction, ground_truths)
                 f1 += _f1
-                evaluate_dataset.append([title, context, qa['question'], ground_truths[0], prediction, _f1, _exact_match)
+                evaluate_dataset.append([title, context, qa['question'], ground_truths[0], prediction, _f1, _exact_match])
 
     exact_match = 100.0 * exact_match / total
     f1 = 100.0 * f1 / total
@@ -82,8 +82,8 @@ def evaluate(dataset, predictions):
     return {'exact_match': exact_match, 'f1': f1}, evaluate_dataset
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
-	parser.add_argument('dataset_file', help='Dataset file', type=str)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset_file', help='Dataset file', type=str)
     parser.add_argument('prediction_file', help='Prediction File', type=str)
     parser.add_argument('output', help='Export output', type=str)
     args = parser.parse_args()
