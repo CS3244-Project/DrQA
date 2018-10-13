@@ -96,11 +96,11 @@ if __name__ == "__main__":
 	parser.add_argument('output', type=str)
 	parser.add_argument('train_output', type=str)
 	parser.add_argument('dev_output', type=str)
-	parser.add_argument('dev_size', type=str)
+	parser.add_argument('dev_size', type=float)
 	args = parser.parse_args()
 
 	lecture_note_dataset = build_lecture_note_dataset(args.mturk_source, args.mturk_response, args.data_dir, args.output)
-	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=dev_size)
+	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)
 	utils.write2csv(lecture_note_dataset, args.output, constants.note_tsv_header)
 	utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
 	utils.write2csv(dev_dataset, args.dev_output, constants.note_tsv_header)
