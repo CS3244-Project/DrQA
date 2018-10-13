@@ -10,7 +10,7 @@ def read_mturk_source(mturk_source, start_row=1, verbose=True):
 		print("Reading mturk source", mturk_source)
 
 	csv_mturk_source = open(mturk_source, 'rt')
-	csv_reader_mturk_source = csv.reader(mturk_source, delimiter=',')
+	csv_reader_mturk_source = csv.reader(csv_mturk_source, delimiter=',')
 
 	mturk_source_data = {}
 
@@ -18,7 +18,8 @@ def read_mturk_source(mturk_source, start_row=1, verbose=True):
 		if verbose and i % 10 == 0:
 			print("Read row", str(i))
 		if i >= start_row:
-			url, title, dept = row[:3]
+			print(row)
+			url, title, _, dept = row[:4]
 			assert url not in mturk_source_data
 			mturk_source_data[url] = {
 				"title": title,
@@ -33,7 +34,7 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 		print("Reading mturk response", mturk_response)
 
 	csv_mturk_response = open(mturk_response, 'rt')
-	csv_reader_mturk_response = csv.reader(mturk_response, delimiter=',')
+	csv_reader_mturk_response = csv.reader(csv_mturk_response, delimiter=',')
 
 	mturk_response_data = {}
 
@@ -55,7 +56,10 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 
 def download_pdf(pdf_urls, dest_path):
 	for url in pdf_urls:
-		os.system("wget " + url + " " + dest_path)
+		download_script = "wget " + url
+		move_script = "mv " + utils.path_leaf(url) + " " + dest_path
+		os.system(download_script)
+		os.system(move_script)
 
 def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, squash=True, verbose=True):
 	mturk_source_data = read_mturk_source(mturk_source)
@@ -74,13 +78,14 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 		_, paragraphs = pdf_reader.read_pdf(file_path)
 
 		pdf_info = mturk_source_data[url]
+		print(pdf_info["dept"])
 		title, dept = pdf_info["title"], pdf_info["dept"]
 
 		for qa in mturk_response_data[url]:
 			page, question, answer = qa["page"], qa["question"], qa["answer"]
-			paragraph = paragraphs[page-1]
-			assert answer in paragraphs
-			csv_writer.writerow([title, paragraphs[page-1], question, answer, dept])
+			paragraph = paragraphs[int(page)-1]
+			# assert answer in paragraphs
+			csv_writer.writerow([title, paragraphs[int(page)-1], question, answer, dept])
 
 	csv_file_out.close()
 
