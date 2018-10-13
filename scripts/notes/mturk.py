@@ -83,8 +83,11 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 
 		for qa in mturk_response_data[url]:
 			page, question, answer = qa["page"], qa["question"], qa["answer"]
-			paragraph = paragraphs[int(page)-1]
-			lecture_note_dataset.append([title, paragraphs[int(page)-1], question, answer, dept])
+			paragraph = ""
+			for p in paragraphs:
+				if answer.lower() in p.lower():
+					paragraph = p
+			lecture_note_dataset.append([title, paragraph, question, answer, dept])
 
 	return lecture_note_dataset
 
