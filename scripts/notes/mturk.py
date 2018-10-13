@@ -5,6 +5,8 @@ import os
 import pdf_reader
 import utils
 
+from sklearn.model_selection import train_test_split
+
 def read_mturk_source(mturk_source, start_row=1, verbose=True):
 	if verbose:
 		print("Reading mturk source", mturk_source)
@@ -68,9 +70,7 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 	pdf_urls = mturk_response_data.keys()
 	# download_pdf(pdf_urls, data_dir)
 
-	csv_file_out = open(output, 'wt')
-	csv_writer = csv.writer(csv_file_out, delimiter=',', lineterminator='\n')
-	csv_writer.writerow(constants.note_tsv_header)
+	lecture_note_dataset = []
 
 	for url in pdf_urls:
 		file_name = utils.path_leaf(url)
@@ -84,10 +84,9 @@ def build_lecture_note_dataset(mturk_source, mturk_response, data_dir, output, s
 		for qa in mturk_response_data[url]:
 			page, question, answer = qa["page"], qa["question"], qa["answer"]
 			paragraph = paragraphs[int(page)-1]
-			# assert answer in paragraphs
-			csv_writer.writerow([title, paragraphs[int(page)-1], question, answer, dept])
+			lecture_note_dataset.append([title, paragraphs[int(page)-1], question, answer, dept])
 
-	csv_file_out.close()
+	return lecture_note_dataset
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -95,6 +94,13 @@ if __name__ == "__main__":
 	parser.add_argument('mturk_response', type=str)
 	parser.add_argument('data_dir', type=str)
 	parser.add_argument('output', type=str)
+	parser.add_argument('train_output', type=str)
+	parser.add_argument('dev_output', type=str)
+	parser.add_argument('dev_size', type=str)
 	args = parser.parse_args()
 
-	build_lecture_note_dataset(args.mturk_source, args.mturk_response, args.data_dir, args.output)
+	lecture_note_dataset = build_lecture_note_dataset(args.mturk_source, args.mturk_response, args.data_dir, args.output)
+	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=dev_size)
+	utils.write2csv(lecture_note_dataset, args.output, constants.note_tsv_header)
+	utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
+	utils.write2csv(dev_dataset, args.dev_output, constants.note_tsv_header)

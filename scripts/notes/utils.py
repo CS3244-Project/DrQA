@@ -15,3 +15,14 @@ def get_uuid(str_len=24):
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
+def write2csv(data, out_path, header=None):
+	csv_file_out = open(out_path, 'wt')
+	csv_writer = csv.writer(csv_file_out, delimiter=',', lineterminator='\n')
+	if header:
+		csv_writer.writerow(header)
+
+	for d in data:
+		csv_writer.writerow(d)
+
+	csv_file_out.close()
