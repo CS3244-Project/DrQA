@@ -79,7 +79,8 @@ def get_contents(filename):
             if not doc:
                 continue
             # Add the document
-            documents.append((utils.normalize(doc['id']), doc['text']))
+            #documents.append((utils.normalize(doc['id']), doc['text']))
+            documents = doc
     return documents
 
 
