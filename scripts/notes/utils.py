@@ -4,6 +4,13 @@ import ntpath
 import re
 import uuid
 
+def normalize(s):
+	s = s.lower()
+	s = s.replace("'", "").replace("-", " ").replace("`", "")
+	s = re.sub("\s\s+", " ", s)
+	s = s[:-1] if s[-1] == "." else s
+	return s
+
 def is_similar_str(str1, str2, threshold=0.8):
 	str1 = re.sub(r'\W+', '', str1)
 	str2 = re.sub(r'\W+', '', str2)
