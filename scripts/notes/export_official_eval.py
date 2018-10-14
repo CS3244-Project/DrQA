@@ -95,4 +95,4 @@ if __name__ == '__main__':
         predictions = json.load(prediction_file)
     evaluate_info, evaluate_dataset = evaluate(dataset, predictions)
     print(json.dumps(evaluate_info))
-    utils.write2csv(evaluate_dataset, args.output, constants.eval_header)
+    utils.write2csv(evaluate_dataset, args.output, constants.eval_header + ['exact match score: ' + str(evaluate_info['exact_match']), 'f1 score: ' + str(evaluate_info['f1'])])
