@@ -155,7 +155,7 @@ if __name__ == '__main__':
         "{filename}\n" +
         "Examples:\t\t\t{total}\n" +
         "Matches in top {k}:\t\t{m}\n" +
-        "Match % in top {k}:\t\t{p:2.2f}\n" +
+        "Match % in top {k}:\t\t{p:2.5f}\n" +
         "Total time:\t\t\t{t:2.4f} (s)\n"
     ).format(
         filename=filename,
