@@ -55,6 +55,8 @@ def has_answer(answer, doc_id, match):
     """
     global PROCESS_DB, PROCESS_TOK
     text = PROCESS_DB.get_doc_text(doc_id)
+    if not text:
+        return False 
     text = utils.normalize(text)
     if match == 'string':
         # Answer is a list of possible strings
@@ -125,7 +127,7 @@ if __name__ == '__main__':
 
     # get the closest docs for each question.
     logger.info('Initializing ranker...')
-    ranker = retriever.get_class('tfidf')(tfidf_path=args.model)
+    ranker = retriever.get_class('tfidf')(tfidf_path=args.model, strict=False)
 
     logger.info('Ranking...')
     closest_docs = ranker.batch_closest_docs(
