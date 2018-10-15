@@ -15,7 +15,8 @@ echo "Will download to: $DOWNLOAD_PATH"
 # Download zip, unzip
 pushd "/tmp"
 wget -O "stanford-corenlp-full-2017-06-09.zip" "http://nlp.stanford.edu/software/stanford-corenlp-full-2017-06-09.zip"
-python -m pyunpack.cli "stanford-corenlp-full-2017-06-09.zip" "./"
+python -m pyunpack.cli "stanford-corenlp-full-2017-06-09.zip" .
+
 rm "stanford-corenlp-full-2017-06-09.zip"
 popd
 
