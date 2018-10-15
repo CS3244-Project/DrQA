@@ -1,1 +1,1 @@
-python scripts/reader/official_eval.py data/datasets/ln.json tmp/ln-default.preds
+python scripts/reader/official_eval.py data/datasets/ln_dev.json tmp/ln_no_init/ln_dev-single.preds
