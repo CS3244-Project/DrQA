@@ -76,10 +76,11 @@ def get_contents(filename):
             if PREPROCESS_FN:
                 doc = PREPROCESS_FN(doc)
             # Skip if it is empty or None
-            if not doc:
-                continue
+            #if not doc:
+            #    continue
             # Add the document
-            documents.append((utils.normalize(doc['id']), doc['text']))
+            #documents.append((utils.normalize(doc['id']), doc['text']))
+            documents = doc
     return documents
 
 
