@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--out-dir', type=str, default='/tmp',
                         help=('Directory to write prediction file to '
                               '(<dataset>-<model>.preds)'))
-    parser.add_argument('--tokenizer', type=str, default=None,
+    parser.add_argument('--reader-tokenizer', type=str, default=None,
                         help=("String option specifying tokenizer type to use "
                               "(e.g. 'corenlp')"))
     parser.add_argument('--num-workers', type=int, default=None,
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-docs', type=int, default=5)
     parser.add_argument('--match', type=str, default='string',
                         choices=['regex', 'string'])
+    parser.add_argument('--retriever-tokenizer', type=str, default='regexp')
 
     args = parser.parse_args()
     t0 = time.time()
@@ -92,7 +93,7 @@ if __name__ == '__main__':
 
     predictor = Predictor(
         model=args.reader_model,
-        tokenizer=args.tokenizer,
+        tokenizer=args.reader_tokenizer,
         embedding_file=args.embedding_file,
         num_workers=args.num_workers,
     )
@@ -123,7 +124,7 @@ if __name__ == '__main__':
         )
 
     # define processes
-    tok_class = tokenizers.get_class(args.tokenizer)
+    tok_class = tokenizers.get_class(args.retriever_tokenizer)
     tok_opts = {}
     db_class = retriever.DocDB
     db_opts = {'db_path': args.doc_db}
