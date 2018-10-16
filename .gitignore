@@ -4,4 +4,6 @@
 data/
 *.tar.gz
 *.egg-info
-tmp/*
+models/*
+saved_tfidf/*
+saved_db/*
