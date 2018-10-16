@@ -33,9 +33,12 @@ def init(tokenizer_class, tokenizer_opts, db_class, db_opts):
     PROCESS_DB = db_class(**db_opts)
     Finalize(PROCESS_DB, PROCESS_DB.close, exitpriority=100)    
 
-def retrieve_documents(closest_doc):
+def retrieve_documents(closest_docs):
     global PROCESS_DB, PROCESS_TOK
-    return PROCESS_DB.get_doc_text(doc_id)
+    contexts = []
+    for doc in closest_docs:
+        contexts.append(PROCESS_DB.get_doc_text(doc))
+    return contexts
 
 if __name__ == '__main__':
     logger = logging.getLogger()
