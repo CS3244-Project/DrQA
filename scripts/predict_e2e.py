@@ -15,7 +15,12 @@ import json
 
 from tqdm import tqdm
 from drqa.reader import Predictor
-from drqa import retriever
+
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.util import Finalize
+from functools import partial
+from drqa import retriever, tokenizers
+from drqa.retriever import utils
 
 PROCESS_TOK = None
 PROCESS_DB = None
@@ -86,7 +91,7 @@ if __name__ == '__main__':
         logger.info('Running on CPU only.')
 
     predictor = Predictor(
-        model=args.retriever_model,
+        model=args.reader_model,
         tokenizer=args.tokenizer,
         embedding_file=args.embedding_file,
         num_workers=args.num_workers,
@@ -150,9 +155,10 @@ if __name__ == '__main__':
             else:
                 results[qids[i + j]] = [(p[0], float(p[1])) for p in predictions[j]]
 
-    model = os.path.splitext(os.path.basename(args.model or 'default'))[0]
+    reader_model = os.path.splitext(os.path.basename(args.reader_model or 'default'))[0]
+    retriever_model = os.path.splitext(os.path.basename(args.retriever_model or 'default'))[0]
     basename = os.path.splitext(os.path.basename(args.dataset))[0]
-    outfile = os.path.join(args.out_dir, basename + '-' + model + '-e2e.preds')
+    outfile = os.path.join(args.out_dir, basename + '-' + reader_model + '-' + retriever_model + '-e2e.preds')
 
     logger.info('Writing results to %s' % outfile)
     with open(outfile, 'w') as f:
