@@ -33,11 +33,11 @@ def init(tokenizer_class, tokenizer_opts, db_class, db_opts):
     PROCESS_DB = db_class(**db_opts)
     Finalize(PROCESS_DB, PROCESS_DB.close, exitpriority=100)    
 
-def retrieve_documents(closest_docs):
+def retrieve_documents(doc_ids):
     global PROCESS_DB, PROCESS_TOK
     contexts = []
-    for doc in closest_docs:
-        contexts.append(PROCESS_DB.get_doc_text(doc))
+    for closest_docs in doc_ids:
+        contexts.append([PROCESS_DB.get_doc_text(doc) for doc in closest_docs])
     return contexts
 
 if __name__ == '__main__':
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------
 
     ranker = retriever.get_class('tfidf')(tfidf_path=args.retriever_model)
-    closest_docs = ranker.batch_closest_docs(
+    retrieved_doc_ids = ranker.batch_closest_docs(
             questions, k=args.n_docs, num_workers=args.num_workers
         )
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         initargs=(tok_class, tok_opts, db_class, db_opts)
     )
 
-    contexts = processes.map(retrieve_documents, closest_docs)
+    contexts = processes.map(retrieve_documents, retrieved_doc_ids)
     for i, question in enumerate(questons):
         examples.append((contexts[i][0], question))
 
