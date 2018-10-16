@@ -21,7 +21,6 @@ def normalize_answer(s):
         return ''.join(ch for ch in text if ch not in exclude)
 
     def lower(text):
-        print(text)
         return text.lower()
 
     return white_space_fix(remove_articles(remove_punc(lower(s))))
@@ -92,4 +91,6 @@ if __name__ == '__main__':
         dataset = dataset_json['data']
     with open(args.prediction_file) as prediction_file:
         predictions = json.load(prediction_file)
-    print(json.dumps(evaluate(dataset, predictions)))
+    print("Evaluation results of", args.prediction_file)
+    print("	", json.dumps(evaluate(dataset, predictions)))
+    print("-" * 20)
