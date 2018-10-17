@@ -33,11 +33,12 @@ def init(tokenizer_class, tokenizer_opts, db_class, db_opts):
     PROCESS_DB = db_class(**db_opts)
     Finalize(PROCESS_DB, PROCESS_DB.close, exitpriority=100)    
 
-def retrieve_documents(doc_ids):
+def retrieve_documents(doc_infos):
     global PROCESS_DB, PROCESS_TOK
-    contexts = []
-    for closest_docs in doc_ids:
-        contexts.append([PROCESS_DB.get_doc_text(doc) for doc in closest_docs])
+    doc_ids, doc_scores = doc_infos
+    contexts = [] 
+    for doc in doc_ids:
+        contexts.append(PROCESS_DB.get_doc_text(doc))
     return contexts
 
 if __name__ == '__main__':
@@ -125,6 +126,7 @@ if __name__ == '__main__':
     retrieved_doc_ids = ranker.batch_closest_docs(
             questions, k=args.n_docs, num_workers=args.num_workers
         )
+    
 
     # define processes
     tok_class = tokenizers.get_class(args.retriever_tokenizer)
@@ -137,9 +139,11 @@ if __name__ == '__main__':
         initargs=(tok_class, tok_opts, db_class, db_opts)
     )
 
-    contexts = processes.map(retrieve_documents, retrieved_doc_ids)
-    for i, question in enumerate(questons):
-        examples.append((contexts[i][0], question))
+    contexts = processes.map(retrieve_documents, retrieved_doc_ids)   
+    examples = []
+    for i, question in enumerate(questions):
+        context = contexts[i][0] if len(contexts[i]) > 0 else " "
+        examples.append((context, question))
 
     # ------------------------------------------------------------------------------
     # Read in dataset and make predictions.
