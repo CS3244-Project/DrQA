@@ -142,7 +142,7 @@ if __name__ == '__main__':
     contexts = processes.map(retrieve_documents, retrieved_doc_ids)   
     examples = []
     for i, question in enumerate(questions):
-        context = contexts[i][0] if len(contexts[i]) > 0 else " "
+        context = contexts[i][0] if len(contexts[i]) > 0 else "_"
         examples.append((context, question))
 
     # ------------------------------------------------------------------------------
