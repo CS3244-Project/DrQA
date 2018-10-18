@@ -22,6 +22,7 @@ fixed_params ={
 "--train-file": "ln_train-processed-corenlp.txt",
 "--dev-file": "ln_dev-processed-corenlp.txt",
 "--dev-json": "ln_dev.json",
+"--train-json": "ln_train.json",
 "--pretrained": "models/pre_trained_single/single.mdl"
 }
 
@@ -37,13 +38,13 @@ params = {
 "--rnn-type" :['LSTM'],
 "--concat-rnn-layers" : [True],
 "--question-merge" :['self_attn'],
-"--dropout-emb" :[0.4, 0.5, 0.6],
-"--dropout-rnn" :[0.4, 0.5, 0.6],
+"--dropout-emb" :[0.4],
+"--dropout-rnn" :[0.4],
 "--dropout-rnn-output" :[True],
 "--grad-clipping" :[10],
-"--weight-decay" :[0, 0.001, 0.005, 0.01],
+"--weight-decay" :[0],
 "--momentum" :[0],
-"--fix-embedding" :[True, False],
+"--fix-embedding" :[True],
 "--tune-partial" : [0],
 "--rnn-padding" :[True, False],
 "--max-len" : [15]}
@@ -53,7 +54,7 @@ all_comb = list(itertools.product(*params.values()))
 
 result = open(csv_result,'w') 
 header = list(params.keys())
-header.extend(["best_F1","F1","EM",
+header.extend(["best_F1","F1_dev","EM_dev","F1_train","EM_train",
 	    "Train_Loss","Start_Train","End_Train","Exact_Train",
 	    "Start_Dev","End_Dev","Exact_Dev"])
 header = ",".join(header)
