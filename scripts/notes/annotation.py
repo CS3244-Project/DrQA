@@ -17,7 +17,7 @@ def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
 		if verbose and i % 10 == 0:
 			print("Read row", str(i))
 		if i >= start_row:
-			title, context, question, answer = row[:4]
+			title, context, question, answer, dept, chapter = row[:6]
 			if len(question) == 0:
 				continue
 			has_added_title = False
@@ -29,7 +29,9 @@ def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
 			if not has_added_title:
 				found_doc = {
 					'paragraphs': [],
-					'title': title
+					'title': title,
+					'department': dept,
+					'chapter': chapter
 				}
 				data['data'].append(found_doc)
 			has_added_context = False
