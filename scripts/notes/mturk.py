@@ -3,6 +3,7 @@ import constants
 import csv
 import os
 import pdf_reader
+from random import shuffle
 import re
 import utils
 
@@ -97,8 +98,11 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 
 def download_pdf(pdf_urls, dest_path, gdrive):
 	if gdrive:
-		gdrive_id = re.search('^https://drive.google.com/file/d/(.+?)/view?usp=sharing$', url) + ".pdf"
-		utils.download_gdrive(gdrive_id, dest_path)
+		for url in pdf_urls:
+			m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
+			file_name = m.group(1) if m else "default"
+			gdrive_id = file_name + ".pdf"
+			utils.download_gdrive(gdrive_id, dest_path + gdrive_id + ".pdf")
 	else:
 		for url in pdf_urls:
 			download_script = "wget " + url
@@ -108,7 +112,9 @@ def download_pdf(pdf_urls, dest_path, gdrive):
 
 def get_file_name(url, gdrive):
 	if gdrive:
-		return re.search('^https://drive.google.com/file/d/(.+?)/view?usp=sharing$', url) + ".pdf"
+		m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
+		name = m.group(1) if m else "default"
+		return name + ".pdf"
 	return utils.path_leaf(url)
 
 def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash=True, gdrive=False, verbose=True):
@@ -161,12 +167,13 @@ if __name__ == "__main__":
 	parser.add_argument('dev_size', type=float)
 	args = parser.parse_args()
 
-	mturk_source_data = read_mturk_source(mturk_source)
-	mturk_response_data = read_mturk_response(mturk_response)
-	self_annot_source_data, self_annot_source_data = read_self_annot(args.self_annot)
-	mturk_dataset = build_lecture_note_dataset(args.mturk_source, args.mturk_response, args.data_dir, args.output)
-	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data, args.output)	
+	self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
+	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, gdrive=True)
+	mturk_source_data = read_mturk_source(args.mturk_source)
+	mturk_response_data = read_mturk_response(args.mturk_response)
+	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output)
 	lecture_note_dataset = mturk_dataset + self_annot_dataset
+	shuffle(lecture_note_dataset)
 	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)
 	utils.write2csv(lecture_note_dataset, args.output, constants.note_tsv_header)
 	utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
