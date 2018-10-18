@@ -2,7 +2,8 @@ import itertools
 import os
 import subprocess
 import numpy as np
-
+import time
+import datetime
 
 HomeDir = os.environ.get('HOME')
 # os.chdir(os.path.join(HomeDir,"CS3244/DrQA"))
@@ -12,10 +13,11 @@ os.chdir(os.path.join(HomeDir,"DrQA"))
 
 log_file = "validation/log_validation.txt"
 csv_result = "validation/csv_result.csv"
+hide_output = False
 
 #### Fixed Parameters ##
 fixed_params ={
-"--num-epoch" : 1,
+"--num-epoch" : 2,
 "--embedding-file": "glove.840B.300d.txt",
 "--model-name": "",
 "--model-dir": "",
@@ -54,38 +56,54 @@ all_comb = list(itertools.product(*params.values()))
 
 result = open(csv_result,'w') 
 header = list(params.keys())
-header.extend(["best_F1","F1_dev","EM_dev","F1_train","EM_train",
-	    "Train_Loss","Start_Train","End_Train","Exact_Train",
-	    "Start_Dev","End_Dev","Exact_Dev"])
+header.extend(["model_name",
+	    "F1_dev","EM_dev","F1_train","EM_train",
+	    "Start_Dev","End_Dev","Exact_Dev",
+	    "Start_Train","End_Train","Exact_Train","Train_Loss"])
 header = ",".join(header)
 result.write(header+"\n")
 
+start_time = time.time()
 for i,comb in enumerate(all_comb):
+	## Record time
+	start_train_time = time.time()	
+	
 	CMD ="python scripts/reader/train.py"
 	#print(os.path.exists(CMD))
-	print( " ".join(list(map(lambda x: str(x),comb))))
+	
 	model_name = "_".join(list(map(lambda x: str(x),comb)))
 	model_dir = "models/" + model_name + "/"
-	subprocess.call(["bash", "-c", "mkdir " + model_dir])
+	if os.path.isdir(model_dir):
+		subprocess.call(["bash","-c","rm " +model_dir +"*"])
+	else:
+		subprocess.call(["bash", "-c", "mkdir " + model_dir])
 	fixed_params["--model-name"] = model_name
 	fixed_params["--model-dir"] = model_dir
 	for name,value in fixed_params.items():
 		CMD += " " + name + " " + str(value)
 	for name,value in zip(list(params.keys()), list(comb)):
 		CMD = CMD + " " +  name + " " + str(value)		
+	if hide_output:
+		CMD = CMD +" &> /dev/null"
 	print("*" *100)
-	print("Training on " + str(i) + "th combination")
+	print("Training on " + str(i+1) + "th combination")
 	print("CMD: " + CMD)
 	print("_"*100)
+	os.system("bash -c \"" + CMD+"\"")
 	
-	#os.system("bash -c \"" + CMD+"\"")
-	subprocess.call(["bash","-c",CMD])
-	log_result = list(map(lambda x:str(x),comb))
+	log_result = [model_name]
+	log_result.extend(list(map(lambda x:str(x),comb)))
 	with open(log_file,'r') as log:
-		log_result.extend(log.readline().split(' '))
+		log_ = log.readline().split(' ')
+	log_result.extend(log_)
 	result.write(",".join(log_result)+"\n")
-
-
+	
+	time_elapsed = datetime.timedelta(seconds = time.time() - start_time)
+	time_remaining = datetime.timedelta(seconds =(time.time() -start_train_time)*(len(all_comb) - i-1))
+	print("Time_Elapsed: " + str(time_elapsed))
+	print("Time_Remaining: " + str(time_remaining))	
+	print("Best F1_Dev: " + log_[0])
+	print("Best EM: " + log_[1])
 result.close()
 	
 	
