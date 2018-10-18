@@ -280,9 +280,9 @@ def validate_unofficial(args, data_loader, model, global_stats, mode):
         global_stats['E_Train']= end_acc.avg
         global_stats['Exact_Train'] = exact_match.avg
     else:
-        global_stats['S_Dev']= start_acc.avg
-        global_stats['E_Dev']= end_acc.avg
-        global_stats['Exact_Dev'] = exact_match.avg
+        global_stats['S_Dev_tmp']= start_acc.avg
+        global_stats['E_Dev_tmp']= end_acc.avg
+        global_stats['Exact_Dev_tmp'] = exact_match.avg
 
     return {'exact_match': exact_match.avg}
 
@@ -494,9 +494,12 @@ def main(args):
     # TRAIN/VALID LOOP
     logger.info('-' * 100)
     logger.info('Starting training...')
-    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,'F1_dev': 0,'EM_dev':0,'F1_train':0,'EM_train':0,
-             'T_Loss':0, 'S_Train':0,'E_Train':0,'Exact_Train':0,
-             'S_Dev':0,'E_Dev':0,'Exact_Dev':0}
+    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,
+             'F1_dev': 0,'EM_dev':0,
+	     'F1_train':0,'EM_train':0,
+             'S_Dev':0,'E_Dev':0,'Exact_Dev':0,
+             'S_Train':0,'E_Train':0,'Exact_Train':0,"T_Loss":0,
+             'S_Dev_tmp':0,'E_Dev_tmp':0,'Exact_Dev_tmp':0}
     for epoch in range(start_epoch, args.num_epochs):
         stats['epoch'] = epoch
 
@@ -516,9 +519,6 @@ def main(args):
             result_train_official  = validate_official(args, train_loader, model, stats,
                                        train_offsets, train_texts, train_answers,mode ='train')
 
-            stats['F1_dev'] = result["f1"]
-            stats['EM_dev'] = result["exact_match"]
-
             stats['F1_train'] = result_train_official["f1"]
             stats['EM_train'] = result_train_official["exact_match"]
         # Save best valid
@@ -528,10 +528,16 @@ def main(args):
                          stats['epoch'], model.updates))
             model.save(args.model_file)
             stats['best_valid'] = result[args.valid_metric]
+            stats['F1_dev'] = result["f1"]
+            stats['EM_dev'] = result["exact_match"]
+            stats['S_Dev'] = stats['S_Dev_tmp']	
+            stats['E_Dev'] = stats['E_Dev_tmp']	
+            stats['Exact_Dev'] = stats['Exact_Dev_tmp']
+	
     with open('validation/log_validation.txt','w') as logFile:
         toWrite = []
         for key,value in stats.items():
-            if(key != 'timer' and  key != 'epoch'):
+            if(key != "best_valid" and key != 'timer' and  key != 'epoch' and key[-3:] != 'tmp'):
                 toWrite.append(str(value))
         toWrite = " ".join(toWrite)
         logFile.write(toWrite)
