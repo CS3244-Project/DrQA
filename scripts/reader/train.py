@@ -510,7 +510,7 @@ def main(args):
                          stats['epoch'], model.updates))
             model.save(args.model_file)
             stats['best_valid'] = result[args.valid_metric]
-    with open('Validation/log_validation.txt','w') as logFile:
+    with open('validation/log_validation.txt','w') as logFile:
         toWrite = []
         for key,value in stats.items():
             if(key != 'timer' and  key != 'epoch'):

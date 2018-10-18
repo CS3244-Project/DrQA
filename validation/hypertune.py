@@ -5,22 +5,24 @@ import numpy as np
 
 
 HomeDir = os.environ.get('HOME')
+# os.chdir(os.path.join(HomeDir,"CS3244/DrQA"))
 os.chdir(os.path.join(HomeDir,"DrQA"))
-#print(os.getcwd())
+# print(os.getcwd())
 
 
-log_file = "Validation/log_validation.txt"
-csv_result = "Validation/csv_result.csv"
+log_file = "validation/log_validation.txt"
+csv_result = "validation/csv_result.csv"
 
 #### Fixed Parameters ##
 fixed_params ={
 "--num-epoch" : 1,
 "--embedding-file": "glove.840B.300d.txt",
 "--model-name": "",
+"--model-dir": "",
 "--train-file": "ln_train-processed-corenlp.txt",
 "--dev-file": "ln_dev-processed-corenlp.txt",
 "--dev-json": "ln_dev.json",
-"--pretrained": "data/reader/single.mdl"
+"--pretrained": "models/pre_trained_single/single.mdl"
 }
 
 
@@ -35,15 +37,15 @@ params = {
 "--rnn-type" :['LSTM'],
 "--concat-rnn-layers" : [True],
 "--question-merge" :['self_attn'],
-"--dropout-emb" :[0.4],
-"--dropout-rnn" :[0.4],
+"--dropout-emb" :[0.4, 0.5, 0.6],
+"--dropout-rnn" :[0.4, 0.5, 0.6],
 "--dropout-rnn-output" :[True],
 "--grad-clipping" :[10],
-"--weight-decay" :[0],
+"--weight-decay" :[0, 0.001, 0.005, 0.01],
 "--momentum" :[0],
-"--fix-embedding" :[True],
+"--fix-embedding" :[True, False],
 "--tune-partial" : [0],
-"--rnn-padding" :[True,False],
+"--rnn-padding" :[True, False],
 "--max-len" : [15]}
 
 all_comb = list(itertools.product(*params.values()))
@@ -61,7 +63,11 @@ for i,comb in enumerate(all_comb):
 	CMD ="python scripts/reader/train.py"
 	#print(os.path.exists(CMD))
 	print( " ".join(list(map(lambda x: str(x),comb))))
-	fixed_params["--model-name"] = "_".join(list(map(lambda x: str(x),comb)))
+	model_name = "_".join(list(map(lambda x: str(x),comb)))
+	model_dir = "models/" + model_name + "/"
+	subprocess.call(["bash", "-c", "mkdir " + model_dir])
+	fixed_params["--model-name"] = model_name
+	fixed_params["--model-dir"] = model_dir
 	for name,value in fixed_params.items():
 		CMD += " " + name + " " + str(value)
 	for name,value in zip(list(params.keys()), list(comb)):
