@@ -99,10 +99,9 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 def download_pdf(pdf_urls, dest_path, gdrive):
 	if gdrive:
 		for url in pdf_urls:
-			m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
-			file_name = m.group(1) if m else "default"
-			gdrive_id = file_name + ".pdf"
-			utils.download_gdrive(gdrive_id, dest_path + gdrive_id + ".pdf")
+			gdrive_id = utils.get_gdrive_id(url)
+			file_name = gdrive_id + ".pdf"
+			utils.download_gdrive(gdrive_id, dest_path + file_name)
 	else:
 		for url in pdf_urls:
 			download_script = "wget " + url
@@ -112,9 +111,9 @@ def download_pdf(pdf_urls, dest_path, gdrive):
 
 def get_file_name(url, gdrive):
 	if gdrive:
-		m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
-		name = m.group(1) if m else "default"
-		return name + ".pdf"
+		gdrive_id = utils.get_gdrive_id(url)
+		file_name = gdrive_id + ".pdf"
+		return file_name
 	return utils.path_leaf(url)
 
 def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash=True, gdrive=False, verbose=True):
