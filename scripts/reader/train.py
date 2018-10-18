@@ -219,6 +219,7 @@ def train(args, data_loader, model, global_stats):
                         (global_stats['epoch'], idx, len(data_loader)) +
                         'loss = %.2f | elapsed time = %.2f (s)' %
                         (train_loss.avg, global_stats['timer'].time()))
+            global_stats['T_Loss'] = float(train_loss.avg)
             train_loss.reset()
 
     logger.info('train: Epoch %d done. Time for epoch = %.2f (s)' %
@@ -228,7 +229,7 @@ def train(args, data_loader, model, global_stats):
     if args.checkpoint:
         model.checkpoint(args.model_file + '.checkpoint',
                          global_stats['epoch'] + 1)
-
+    
 
 # ------------------------------------------------------------------------------
 # Validation loops. Includes both "unofficial" and "official" functions that
@@ -268,6 +269,14 @@ def validate_unofficial(args, data_loader, model, global_stats, mode):
                 'end = %.2f | exact = %.2f | examples = %d | ' %
                 (end_acc.avg, exact_match.avg, examples) +
                 'valid time = %.2f (s)' % eval_time.time())
+    if mode =="train":
+        global_stats['S_Train']= start_acc.avg
+        global_stats['E_Train']= end_acc.avg
+        global_stats['Exact_Train'] = exact_match.avg
+    else:
+        global_stats['S_Dev']= start_acc.avg
+        global_stats['E_Dev']= end_acc.avg
+        global_stats['Exact_Dev'] = exact_match.avg
 
     return {'exact_match': exact_match.avg}
 
@@ -343,7 +352,7 @@ def eval_accuracies(pred_s, target_s, pred_e, target_e):
 
         # Both start and end match
         if any([1 for _s, _e in zip(target_s[i], target_e[i])
-                if _s == pred_s[i] and _e == pred_e[i]]):
+                if _s == int(pred_s[i]) and _e == int(pred_e[i])]):
             em.update(1)
         else:
             em.update(0)
@@ -473,7 +482,9 @@ def main(args):
     # TRAIN/VALID LOOP
     logger.info('-' * 100)
     logger.info('Starting training...')
-    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0}
+    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,'F1': 0,'EM':0,
+             'T_Loss':0, 'S_Train':0,'E_Train':0,'Exact_Train':0,
+             'S_Dev':0,'E_Dev':0,'Exact_Dev':0}
     for epoch in range(start_epoch, args.num_epochs):
         stats['epoch'] = epoch
 
@@ -481,7 +492,7 @@ def main(args):
         train(args, train_loader, model, stats)
 
         # Validate unofficial (train)
-        validate_unofficial(args, train_loader, model, stats, mode='train')
+        Train_result = validate_unofficial(args, train_loader, model, stats, mode='train')
 
         # Validate unofficial (dev)
         result = validate_unofficial(args, dev_loader, model, stats, mode='dev')
@@ -490,7 +501,8 @@ def main(args):
         if args.official_eval:
             result = validate_official(args, dev_loader, model, stats,
                                        dev_offsets, dev_texts, dev_answers)
-
+            stats['F1'] = result["f1"]
+            stats['EM'] = result["exact_match"]
         # Save best valid
         if result[args.valid_metric] > stats['best_valid']:
             logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
@@ -498,7 +510,13 @@ def main(args):
                          stats['epoch'], model.updates))
             model.save(args.model_file)
             stats['best_valid'] = result[args.valid_metric]
-
+    with open('Validation/log_validation.txt','w') as logFile:
+        toWrite = []
+        for key,value in stats.items():
+            if(key != 'timer' and  key != 'epoch'):
+                toWrite.append(str(value))
+        toWrite = " ".join(toWrite)
+        logFile.write(toWrite)
 
 if __name__ == '__main__':
     # Parse cmdline args and setup environment
