@@ -12,6 +12,10 @@ def normalize(s):
 	s = s[:-1] if s[-1] == "." else s
 	return s
 
+def get_gdrive_id(url):
+	m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
+	return m.group(1) if m else "default"
+
 def is_similar_str(str1, str2, threshold=0.8):
 	str1 = re.sub(r'\W+', '', str1)
 	str2 = re.sub(r'\W+', '', str2)
