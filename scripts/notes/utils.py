@@ -11,6 +11,13 @@ def normalize(s):
 	s = re.sub("\s\s+", " ", s)
 	s = s[:-1] if s[-1] == "." else s
 	return s
+    
+def capture_regex(doc, mystr):
+    str2insert = "[(</newline>)(</tab>)\s]*"
+    regex_pattern = ".*(" + str2insert.join(mystr.split(' ')) + ").*"
+    print(regex_pattern)
+    m = re.search(regex_pattern, doc)
+    return m.group(1) if m else mystr
 
 def get_gdrive_id(url):
 	m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
