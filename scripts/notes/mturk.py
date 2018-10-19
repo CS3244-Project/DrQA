@@ -128,7 +128,7 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 	for url in pdf_urls:
 		file_name = get_file_name(url, gdrive)
 		file_path = data_dir + file_name
-		_, paragraphs = pdf_reader.read_pdf(file_path)
+		_, paragraphs = pdf_reader.read_pdf(file_path, squash, verbose)
 
 		pdf_info = mturk_source_data[url]	
 		title, dept, chapter = pdf_info["title"], pdf_info["dept"], pdf_info["chapter"]
