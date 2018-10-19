@@ -138,7 +138,7 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 				answer = utils.normalize(answer)
 				annotated_p = utils.normalize(paragraphs[int(page)-1])
 				if answer not in annotated_p:
-						for p in paragraphs:
+					for p in paragraphs:
 						p = utils.normalize(p)	
 						if answer in p:
 							annotated_p = p
