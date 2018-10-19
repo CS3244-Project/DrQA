@@ -516,11 +516,11 @@ def main(args):
         if args.official_eval:
             result = validate_official(args, dev_loader, model, stats,
                                        dev_offsets, dev_texts, dev_answers)
-            result_train_official  = validate_official(args, train_loader, model, stats,
-                                       train_offsets, train_texts, train_answers,mode ='train')
+            #result_train_official  = validate_official(args, train_loader, model, stats,
+            #                          train_offsets, train_texts, train_answers,mode ='train')
 
-            stats['F1_train'] = result_train_official["f1"]
-            stats['EM_train'] = result_train_official["exact_match"]
+            #stats['F1_train'] = result_train_official["f1"]
+            #stats['EM_train'] = result_train_official["exact_match"]
         # Save best valid
         if result[args.valid_metric] > stats['best_valid']:
             logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
