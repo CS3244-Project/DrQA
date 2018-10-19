@@ -123,7 +123,6 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 
 	lecture_note_dataset = []
 	unique_questions = []
-	not_found = []
 
 	for url in pdf_urls:
 		file_name = get_file_name(url, gdrive)
@@ -138,17 +137,14 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 			if question not in unique_questions:			
 				answer = utils.normalize(answer)
 				annotated_p = utils.normalize(paragraphs[int(page)-1])
-				if answer in annotated_p:
-					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
-					unique_questions.append(question)
-				else:
-					for p in paragraphs:
+				if answer not in annotated_p:
+						for p in paragraphs:
 						p = utils.normalize(p)	
-						if answer in p:	
-							lecture_note_dataset.append([title, p, question, answer, dept, chapter])
-							unique_questions.append(question)
+						if answer in p:
+							annotated_p = p
 							break
-					not_found.append([title, question, answer])
+				lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
+				unique_questions.append(question)
 	return lecture_note_dataset
 
 if __name__ == "__main__":
