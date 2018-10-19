@@ -149,9 +149,6 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 							unique_questions.append(question)
 							break
 					not_found.append([title, question, answer])
-	for i in not_found[:5]:
-		print(i)	
-	raise Exception()
 	return lecture_note_dataset
 
 if __name__ == "__main__":
