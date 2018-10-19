@@ -13,7 +13,7 @@ os.chdir(os.path.join(HomeDir,"DrQA"))
 
 log_file = "validation/log_validation.txt"
 csv_result = "validation/csv_result.csv"
-hide_output = False
+hide_output = True
 
 #### Fixed Parameters ##
 fixed_params ={
