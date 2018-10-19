@@ -139,9 +139,11 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 				annotated_p = utils.normalize(paragraphs[int(page)-1])
 				if answer not in annotated_p:
 					for p in paragraphs:
-						p = utils.normalize(p)	
+						p = utils.normalize(p)
+						formated_answer = utils.capture_regex(p, answer)
 						if answer in p:
 							annotated_p = p
+							answer = formated_answer
 							break
 				lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
 				unique_questions.append(question)
