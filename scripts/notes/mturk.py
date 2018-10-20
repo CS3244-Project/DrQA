@@ -85,7 +85,7 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 		if verbose and i % 10 == 0:
 			print("Read row", str(i))
 		if i >= start_row:
-			url, question, answer, page = row[:4]
+			url, page, question, answer = row[:4]
 			if url not in mturk_response_data:
 				mturk_response_data[url] = []
 			mturk_response_data[url].append({
@@ -155,7 +155,7 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 				if answer in annotated_p:
 					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
 					unique_questions.append(question)
-				else if include_not_found:
+				elif include_not_found:
 					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter, 'x'])
 					unique_questions.append(question)
 	return lecture_note_dataset
@@ -175,10 +175,10 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
-	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True, include_not_found=include_not_found)
+	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True, include_not_found=args.include_not_found)
 	mturk_source_data = read_mturk_source(args.mturk_source)
 	mturk_response_data = read_mturk_response(args.mturk_response)
-	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output, args.squash, include_not_found=include_not_found)
+	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output, args.squash, include_not_found=args.include_not_found)
 	lecture_note_dataset = mturk_dataset + self_annot_dataset
 	shuffle(lecture_note_dataset)
 	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)

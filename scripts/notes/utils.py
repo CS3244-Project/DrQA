@@ -7,7 +7,8 @@ import uuid
 
 def normalize(s):
 	s = s.lower()
-	s = s.replace("'", "").replace("-", " ").replace("`", "")
+	s = re.sub('\\(cid:.*?\\)', ' ', s)
+	s = s.replace("'", " ").replace("-", " ").replace("`", " ").replace("(", " ").replace(")", " ")
 	s = re.sub("\s\s+", " ", s)
 	s = s[:-1] if s[-1] == "." else s
 	return s
