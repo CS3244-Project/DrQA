@@ -13,10 +13,14 @@ def normalize(s):
 	return s
     
 def capture_regex(doc, mystr):
-    str2insert = "[(</newline>)(</tab>)\s]*"
-    regex_pattern = ".*(" + str2insert.join(mystr.split(' ')) + ").*"
-    print(regex_pattern)
-    m = re.search(regex_pattern, doc)
+    str2insert = "[\s(</newline>)(</tab>)\s]*"
+    regex_pattern = ".*(" + str2insert + str2insert.join([re.escape(s) for s in mystr.split(' ')]) + str2insert + ").*"
+    try:
+        m = re.search(regex_pattern, doc)
+    except Exception as e:
+        print(doc)
+        print(mystr)
+        raise e
     return m.group(1) if m else mystr
 
 def get_gdrive_id(url):

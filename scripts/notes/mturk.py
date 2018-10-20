@@ -61,7 +61,8 @@ def read_mturk_source(mturk_source, start_row=1, verbose=True):
 		if i >= start_row:
 			print(row)
 			url, title, _, dept = row[:4]
-			assert url not in mturk_source_data
+			if url in mturk_source_data:
+				raise Exception("Duplicated url {} at row {}".format(url, i))
 			mturk_source_data[url] = {
 				"title": title,
 				"dept": dept,
@@ -84,7 +85,7 @@ def read_mturk_response(mturk_response, start_row=1, verbose=True):
 		if verbose and i % 10 == 0:
 			print("Read row", str(i))
 		if i >= start_row:
-			url, page, question, answer = row[:4]
+			url, question, answer, page = row[:4]
 			if url not in mturk_response_data:
 				mturk_response_data[url] = []
 			mturk_response_data[url].append({
@@ -119,7 +120,7 @@ def get_file_name(url, gdrive):
 def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash=True, gdrive=False, verbose=True):
 
 	pdf_urls = mturk_response_data.keys()
-	download_pdf(pdf_urls, data_dir, gdrive)
+	# download_pdf(pdf_urls, data_dir, gdrive)
 
 	lecture_note_dataset = []
 	unique_questions = []
@@ -136,17 +137,24 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 			page, question, answer = qa["page"], qa["question"], qa["answer"]
 			if question not in unique_questions:			
 				answer = utils.normalize(answer)
-				annotated_p = utils.normalize(paragraphs[int(page)-1])
-				if answer not in annotated_p:
+				try:
+					page = int(page)
+				except Exception:
+					page = 1
+				annotated_p = utils.normalize(paragraphs[page-1])
+				formated_answer = utils.capture_regex(annotated_p, answer)
+				if formated_answer not in annotated_p:
 					for p in paragraphs:
 						p = utils.normalize(p)
 						formated_answer = utils.capture_regex(p, answer)
-						if answer in p:
+						print(formated_answer)
+						if formated_answer in p:
 							annotated_p = p
 							answer = formated_answer
 							break
-				lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
-				unique_questions.append(question)
+				if answer in annotated_p:
+					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
+					unique_questions.append(question)
 	return lecture_note_dataset
 
 if __name__ == "__main__":
