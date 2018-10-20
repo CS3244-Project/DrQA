@@ -117,7 +117,7 @@ def get_file_name(url, gdrive):
 		return file_name
 	return utils.path_leaf(url)
 
-def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash=True, gdrive=False, verbose=True):
+def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash, gdrive=False, verbose=True):
 
 	pdf_urls = mturk_response_data.keys()
 	# download_pdf(pdf_urls, data_dir, gdrive)
@@ -167,13 +167,14 @@ if __name__ == "__main__":
 	parser.add_argument('train_output', type=str)
 	parser.add_argument('dev_output', type=str)
 	parser.add_argument('dev_size', type=float)
+	parser.add_argument('squash', type=bool, default=True)
 	args = parser.parse_args()
 
 	self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
-	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, gdrive=True)
+	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True)
 	mturk_source_data = read_mturk_source(args.mturk_source)
 	mturk_response_data = read_mturk_response(args.mturk_response)
-	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output)
+	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output, args.squash)
 	lecture_note_dataset = mturk_dataset + self_annot_dataset
 	shuffle(lecture_note_dataset)
 	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)
