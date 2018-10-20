@@ -152,6 +152,8 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 							annotated_p = p
 							answer = formated_answer
 							break
+				else:
+					answer = formated_answer
 				if answer in annotated_p:
 					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
 					unique_questions.append(question)
