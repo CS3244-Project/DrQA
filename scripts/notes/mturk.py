@@ -170,9 +170,10 @@ if __name__ == "__main__":
 	parser.add_argument('train_output', type=str)
 	parser.add_argument('dev_output', type=str)
 	parser.add_argument('dev_size', type=float)
-	parser.add_argument('squash', type=bool)
-	parser.add_argument('include_not_found', type=bool)
+	parser.add_argument('--squash', type=bool)
+	parser.add_argument('--include_not_found', type=bool)	
 	args = parser.parse_args()
+	
 
 	self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
 	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True, include_not_found=args.include_not_found)
