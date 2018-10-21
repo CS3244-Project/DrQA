@@ -55,9 +55,9 @@ all_comb = list(itertools.product(*params.values()))
 
 
 result = open(csv_result,'w') 
-header = list(params.keys())
-header.extend(["model_name",
-	    "F1_dev","EM_dev","F1_train","EM_train",
+header = ["Model_name"]
+header.extend(list(params.keys()))
+header.extend(["F1_dev","EM_dev","F1_train","EM_train",
 	    "Start_Dev","End_Dev","Exact_Dev",
 	    "Start_Train","End_Train","Exact_Train","Train_Loss"])
 header = ",".join(header)
