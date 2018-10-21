@@ -142,11 +142,11 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 				except Exception:
 					page = 1
 				annotated_p = utils.normalize(paragraphs[page-1])
-				formated_answer = utils.capture_regex(annotated_p, answer)
+				formated_answer = utils.capture_regex(annotated_p, answer, squash)
 				if formated_answer not in annotated_p:
 					for p in paragraphs:
 						p = utils.normalize(p)
-						formated_answer = utils.capture_regex(p, answer)
+						formated_answer = utils.capture_regex(p, answer, squash)
 						print(formated_answer)
 						if formated_answer in p:
 							annotated_p = p
