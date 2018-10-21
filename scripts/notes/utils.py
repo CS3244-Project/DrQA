@@ -13,7 +13,9 @@ def normalize(s):
 	s = s[:-1] if s[-1] == "." else s
 	return s
     
-def capture_regex(doc, mystr):
+def capture_regex(doc, mystr, squash=True):
+    if squash:
+        return mystr
     str2insert = "[\s(</newline>)(</tab>)\s]*"
     regex_pattern = ".*(" + str2insert + str2insert.join([re.escape(s) for s in mystr.split(' ')]) + str2insert + ").*"
     try:
