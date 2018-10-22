@@ -1,1 +1,2 @@
-python scripts/notes/mturk.py data/notes/mturk_source.csv data/notes/mturk_response.csv data/notes/self_annot.csv data/notes/pdfs/ data/notes/mturk_self.csv data/notes/mturk_self_train.csv data/notes/mturk_self__dev.csv 0.1
+python scripts/notes/mturk.py data/notes/mturk_source.csv data/notes/mturk_response.csv data/notes/self_annot.csv data/notes/pdfs/ data/notes/mturk_self.csv data/notes/mturk_self_train.csv data/notes/mturk_self_dev.csv 0.1 --squash=True --cross_validation_fold 10 --load_local True 
+# python scripts/notes/mturk.py data/notes/mturk_source.csv data/notes/mturk_response.csv data/notes/self_annot.csv data/notes/pdfs/ data/notes/mturk_self_tokens.csv data/notes/mturk_self_tokens_train.csv data/notes/mturk_self_tokens_dev.csv 0.1 

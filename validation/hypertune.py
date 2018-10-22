@@ -5,8 +5,8 @@ import numpy as np
 import time
 import datetime
 
-HomeDir = os.environ.get('HOME')
-# os.chdir(os.path.join(HomeDir,"CS3244/DrQA"))
+#HomeDir = os.environ.get('HOME')
+#os.chdir(os.path.join(HomeDir,"CS3244/DrQA"))
 os.chdir(os.path.join(HomeDir,"DrQA"))
 # print(os.getcwd())
 
@@ -40,11 +40,11 @@ params = {
 "--rnn-type" :['LSTM'],
 "--concat-rnn-layers" : [True],
 "--question-merge" :['self_attn'],
-"--dropout-emb" :[0.4],
-"--dropout-rnn" :[0.4],
+"--dropout-emb" :[0.4, 0.5, 0.6],
+"--dropout-rnn" :[0.4, 0.5, 0.6],
 "--dropout-rnn-output" :[True],
 "--grad-clipping" :[10],
-"--weight-decay" :[0],
+"--weight-decay" :[0, 0.001, 0.005, 0.01],
 "--momentum" :[0],
 "--fix-embedding" :[True],
 "--tune-partial" : [0],

@@ -7,10 +7,24 @@ import uuid
 
 def normalize(s):
 	s = s.lower()
-	s = s.replace("'", "").replace("-", " ").replace("`", "")
+	s = re.sub('\\(cid:.*?\\)', ' ', s)
+	s = s.replace("'", " ").replace("-", " ").replace("`", " ").replace("(", " ").replace(")", " ")
 	s = re.sub("\s\s+", " ", s)
-	s = s[:-1] if s[-1] == "." else s
+	s = s[:-1] if (len(s) > 0 and s[-1] == ".") else s
 	return s
+    
+def capture_regex(doc, mystr, squash=True):
+    if squash:
+        return mystr
+    str2insert = "[\s(</newline>)(</tab>)\s]*"
+    regex_pattern = ".*(" + str2insert + str2insert.join([re.escape(s) for s in mystr.split(' ')]) + str2insert + ").*"
+    try:
+        m = re.search(regex_pattern, doc)
+    except Exception as e:
+        print(doc)
+        print(mystr)
+        raise e
+    return m.group(1) if m else mystr
 
 def get_gdrive_id(url):
 	m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
