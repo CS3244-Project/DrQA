@@ -120,7 +120,7 @@ def get_file_name(url, gdrive):
 def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash, gdrive=False, verbose=True, include_not_found=False):
 
 	pdf_urls = mturk_response_data.keys()
-	# download_pdf(pdf_urls, data_dir, gdrive)
+	download_pdf(pdf_urls, data_dir, gdrive)
 
 	lecture_note_dataset = []
 	unique_questions = []
@@ -154,7 +154,7 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 							break
 				else:
 					answer = formated_answer
-				if answer in annotated_p:
+				if len(answer) > 0 len(annotated_p) > 0and answer in annotated_p:
 					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
 					unique_questions.append(question)
 				elif include_not_found:

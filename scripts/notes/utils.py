@@ -10,7 +10,7 @@ def normalize(s):
 	s = re.sub('\\(cid:.*?\\)', ' ', s)
 	s = s.replace("'", " ").replace("-", " ").replace("`", " ").replace("(", " ").replace(")", " ")
 	s = re.sub("\s\s+", " ", s)
-	s = s[:-1] if s[-1] == "." else s
+	s = s[:-1] if (len(s) > 0 and s[-1] == ".") else s
 	return s
     
 def capture_regex(doc, mystr, squash=True):
