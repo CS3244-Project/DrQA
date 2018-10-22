@@ -2,12 +2,13 @@ import argparse
 import constants
 import csv
 import os
+import pickle
 import pdf_reader
 from random import shuffle
 import re
 import utils
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 
 def read_self_annot(self_annot, start_row=1, verbose=True):
 	if verbose:
@@ -120,7 +121,7 @@ def get_file_name(url, gdrive):
 def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir, output, squash, gdrive=False, verbose=True, include_not_found=False):
 
 	pdf_urls = mturk_response_data.keys()
-	download_pdf(pdf_urls, data_dir, gdrive)
+	# download_pdf(pdf_urls, data_dir, gdrive)
 
 	lecture_note_dataset = []
 	unique_questions = []
@@ -154,7 +155,7 @@ def build_lecture_note_dataset(mturk_source_data, mturk_response_data, data_dir,
 							break
 				else:
 					answer = formated_answer
-				if len(answer) > 0 len(annotated_p) > 0and answer in annotated_p:
+				if len(answer) > 0 and len(annotated_p) > 0 and answer in annotated_p:
 					lecture_note_dataset.append([title, annotated_p, question, answer, dept, chapter])
 					unique_questions.append(question)
 				elif include_not_found:
@@ -172,19 +173,38 @@ if __name__ == "__main__":
 	parser.add_argument('train_output', type=str)
 	parser.add_argument('dev_output', type=str)
 	parser.add_argument('dev_size', type=float)
+	parser.add_argument('--load_local', type=bool)
 	parser.add_argument('--squash', type=bool)
 	parser.add_argument('--include_not_found', type=bool)	
+	parser.add_argument('--cross_validation_fold',type=int, default=0)
+	parser.add_argument('--fold_dir',type=str, default="data/notes/folds")
 	args = parser.parse_args()
 	
-
-	self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
-	self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True, include_not_found=args.include_not_found)
-	mturk_source_data = read_mturk_source(args.mturk_source)
-	mturk_response_data = read_mturk_response(args.mturk_response)
-	mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output, args.squash, include_not_found=args.include_not_found)
-	lecture_note_dataset = mturk_dataset + self_annot_dataset
-	shuffle(lecture_note_dataset)
-	train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)
-	utils.write2csv(lecture_note_dataset, args.output, constants.note_tsv_header)
-	utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
-	utils.write2csv(dev_dataset, args.dev_output, constants.note_tsv_header)
+	if args.load_local:
+		with open('ln.p', 'rb') as f:
+			lecture_note_dataset = pickle.load(f)
+	else:
+		self_annot_source_data, self_annot_response_data = read_self_annot(args.self_annot)
+		self_annot_dataset = build_lecture_note_dataset(self_annot_source_data, self_annot_response_data, args.data_dir, args.output, args.squash, gdrive=True, include_not_found=args.include_not_found)
+		mturk_source_data = read_mturk_source(args.mturk_source)
+		mturk_response_data = read_mturk_response(args.mturk_response)
+		mturk_dataset = build_lecture_note_dataset(mturk_source_data, mturk_response_data, args.data_dir, args.output, args.squash, include_not_found=args.include_not_found)
+		lecture_note_dataset = mturk_dataset + self_annot_dataset
+		with open('ln.p', 'wb') as f:
+			pickle.dump(lecture_note_dataset, f)
+	if args.cross_validation_fold ==0:
+		shuffle(lecture_note_dataset)
+		train_dataset, dev_dataset = train_test_split(lecture_note_dataset, test_size=args.dev_size)
+		utils.write2csv(lecture_note_dataset, args.output, constants.note_tsv_header)
+		utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
+		utils.write2csv(dev_dataset, args.dev_output, constants.note_tsv_header)
+	else:
+		kf = KFold(n_splits=args.cross_validation_fold)
+		count = 1
+		for train_index, test_index in kf.split(lecture_note_dataset):
+			print("Train: ", train_index,"Test: ",test_index)
+			train_dataset = [lecture_note_dataset[i] for i in train_index]
+			dev_dataset = [lecture_note_dataset[i] for i in test_index]
+			utils.write2csv(train_dataset, args.fold_dir +"/mturk_self_train_"+str(count)+".csv", constants.note_tsv_header)
+			utils.write2csv(dev_dataset,args.fold_dir +"/mturk_self_dev_"+str(count)+".csv" , constants.note_tsv_header)
+			count =count +1
