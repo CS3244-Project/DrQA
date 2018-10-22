@@ -85,7 +85,10 @@ def add_train_args(parser):
     files.add_argument('--embedding-file', type=str,
                        default='glove.840B.300d.txt',
                        help='Space-separated pretrained embeddings file')
-
+    ##### Edited for Train test F1
+    files.add_argument("--train-json",type= str, default= 'ln_train.json',
+                       help='Unprocessed train file to run validation (added for Lecnote)')
+    #####
     # Saving + loading
     save_load = parser.add_argument_group('Saving/Loading')
     save_load.add_argument('--checkpoint', type='bool', default=False,
@@ -119,6 +122,9 @@ def add_train_args(parser):
 def set_defaults(args):
     """Make sure the commandline arguments are initialized properly."""
     # Check critical files exist
+    ### Edited
+    args.train_json = os.path.join(args.data_dir, args.train_json)
+    ###    
     args.dev_json = os.path.join(args.data_dir, args.dev_json)
     if not os.path.isfile(args.dev_json):
         raise IOError('No such file: %s' % args.dev_json)
@@ -219,6 +225,7 @@ def train(args, data_loader, model, global_stats):
                         (global_stats['epoch'], idx, len(data_loader)) +
                         'loss = %.2f | elapsed time = %.2f (s)' %
                         (train_loss.avg, global_stats['timer'].time()))
+            global_stats['T_Loss'] = float(train_loss.avg)
             train_loss.reset()
 
     logger.info('train: Epoch %d done. Time for epoch = %.2f (s)' %
@@ -228,7 +235,7 @@ def train(args, data_loader, model, global_stats):
     if args.checkpoint:
         model.checkpoint(args.model_file + '.checkpoint',
                          global_stats['epoch'] + 1)
-
+    
 
 # ------------------------------------------------------------------------------
 # Validation loops. Includes both "unofficial" and "official" functions that
@@ -268,12 +275,20 @@ def validate_unofficial(args, data_loader, model, global_stats, mode):
                 'end = %.2f | exact = %.2f | examples = %d | ' %
                 (end_acc.avg, exact_match.avg, examples) +
                 'valid time = %.2f (s)' % eval_time.time())
+    if mode =="train":
+        global_stats['S_Train']= start_acc.avg
+        global_stats['E_Train']= end_acc.avg
+        global_stats['Exact_Train'] = exact_match.avg
+    else:
+        global_stats['S_Dev_tmp']= start_acc.avg
+        global_stats['E_Dev_tmp']= end_acc.avg
+        global_stats['Exact_Dev_tmp'] = exact_match.avg
 
     return {'exact_match': exact_match.avg}
 
 
 def validate_official(args, data_loader, model, global_stats,
-                      offsets, texts, answers):
+                      offsets, texts, answers,mode ="dev"):
     """Run one full official validation. Uses exact spans and same
     exact match/F1 score computation as in the SQuAD script.
 
@@ -306,7 +321,7 @@ def validate_official(args, data_loader, model, global_stats,
 
         examples += batch_size
 
-    logger.info('dev valid official: Epoch = %d | EM = %.2f | ' %
+    logger.info(mode+' valid official: Epoch = %d | EM = %.2f | ' %
                 (global_stats['epoch'], exact_match.avg * 100) +
                 'F1 = %.2f | examples = %d | valid time = %.2f (s)' %
                 (f1.avg * 100, examples, eval_time.time()))
@@ -365,6 +380,8 @@ def main(args):
     dev_exs = utils.load_data(args, args.dev_file)
     logger.info('Num dev examples = %d' % len(dev_exs))
 
+    train_exs_with_ans = utils.load_data(args,args.train_file)
+
     # If we are doing offician evals then we need to:
     # 1) Load the original text to retrieve spans from offsets.
     # 2) Load the (multiple) text answers for each question.
@@ -372,6 +389,10 @@ def main(args):
         dev_texts = utils.load_text(args.dev_json)
         dev_offsets = {ex['id']: ex['offsets'] for ex in dev_exs}
         dev_answers = utils.load_answers(args.dev_json)
+        train_texts = utils.load_text(args.train_json)
+        train_offsets = {ex['id']: ex['offsets'] for ex in train_exs_with_ans}
+        train_answers = utils.load_answers(args.train_json)
+
 
     # --------------------------------------------------------------------------
     # MODEL
@@ -473,7 +494,12 @@ def main(args):
     # TRAIN/VALID LOOP
     logger.info('-' * 100)
     logger.info('Starting training...')
-    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0}
+    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,
+             'F1_dev': 0,'EM_dev':0,
+	     'F1_train':0,'EM_train':0,
+             'S_Dev':0,'E_Dev':0,'Exact_Dev':0,
+             'S_Train':0,'E_Train':0,'Exact_Train':0,"T_Loss":0,
+             'S_Dev_tmp':0,'E_Dev_tmp':0,'Exact_Dev_tmp':0}
     for epoch in range(start_epoch, args.num_epochs):
         stats['epoch'] = epoch
 
@@ -481,7 +507,7 @@ def main(args):
         train(args, train_loader, model, stats)
 
         # Validate unofficial (train)
-        validate_unofficial(args, train_loader, model, stats, mode='train')
+        Train_result = validate_unofficial(args, train_loader, model, stats, mode='train')
 
         # Validate unofficial (dev)
         result = validate_unofficial(args, dev_loader, model, stats, mode='dev')
@@ -490,7 +516,11 @@ def main(args):
         if args.official_eval:
             result = validate_official(args, dev_loader, model, stats,
                                        dev_offsets, dev_texts, dev_answers)
+            result_train_official  = validate_official(args, train_loader, model, stats,
+                                       train_offsets, train_texts, train_answers,mode ='train')
 
+            stats['F1_train'] = result_train_official["f1"]
+            stats['EM_train'] = result_train_official["exact_match"]
         # Save best valid
         if result[args.valid_metric] > stats['best_valid']:
             logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
@@ -498,7 +528,19 @@ def main(args):
                          stats['epoch'], model.updates))
             model.save(args.model_file)
             stats['best_valid'] = result[args.valid_metric]
-
+            stats['F1_dev'] = result["f1"]
+            stats['EM_dev'] = result["exact_match"]
+            stats['S_Dev'] = stats['S_Dev_tmp']	
+            stats['E_Dev'] = stats['E_Dev_tmp']	
+            stats['Exact_Dev'] = stats['Exact_Dev_tmp']
+	
+    with open('validation/log_validation.txt','w') as logFile:
+        toWrite = []
+        for key,value in stats.items():
+            if(key != "best_valid" and key != 'timer' and  key != 'epoch' and key[-3:] != 'tmp'):
+                toWrite.append(str(value))
+        toWrite = " ".join(toWrite)
+        logFile.write(toWrite)
 
 if __name__ == '__main__':
     # Parse cmdline args and setup environment

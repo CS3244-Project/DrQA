@@ -1,1 +1,6 @@
-python scripts/reader/predict.py data/datasets/ln_dev.json --model tmp/ln_no_init/20181014-51fb47ff.mdl --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir tmp/ln_no_init/
+# python scripts/reader/predict.py data/datasets/ln_dev.json --model models/pre_trained_single/single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/pre_trained_single/
+# python scripts/reader/predict.py data/datasets/ln_dev.json --model models/pre_trained_multi/multitask.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/pre_trained_multi/
+# python scripts/reader/predict.py data/datasets/ln_dev.json --model models/csQA_single/csQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/csQA_single/
+# python scripts/reader/predict.py data/datasets/ln_dev.json --model models/wsQA_single/wsQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/wsQA_single/
+# python scripts/reader/predict.py data/datasets/ln_tokens_dev.json --model models/csQA_tokens_single/csQA_tokens_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/csQA_tokens_single/
+python scripts/reader/predict.py data/datasets/ln_tokens_dev.json --model models/wsQA_tokens_single/wsQA_tokens_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/wsQA_tokens_single/

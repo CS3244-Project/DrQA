@@ -49,8 +49,10 @@ def read_pdf(file_path, squash=True, verbose=True):
 			data = retstr.getvalue()
 			data = ''.join(x for x in data if x in string.printable)
 			if squash:
-				data = data.replace("\t", " ").replace("\n", " ")
-				data = re.sub("\s\s+" , " ", data)                       
+				data = data.replace("\t", " ").replace("\n", " ")	
+			else:
+				data = data.replace("\t", " </tab> ").replace("\n", " </newline> ")
+			data = re.sub("\s\s+" , " ", data)                       
 			paragraphs.append(data)
 			retstr.truncate(0)
 			retstr.seek(0)
