@@ -9,6 +9,7 @@
 import logging
 import numpy as np
 import scipy.sparse as sp
+import regex as re
 
 from multiprocessing.pool import ThreadPool
 from functools import partial
@@ -52,12 +53,30 @@ class TfidfDocRanker(object):
         """Convert doc_index --> doc_id"""
         return self.doc_dict[1][doc_index]
 
-    def closest_docs(self, query, k=1):
+    def get_doc_department(self, doc_index):
+        """Convert doc_index --> doc_department"""
+        return self.doc_dict[2][doc_index]
+    
+    def filter_res(self, res, department):
+        """Convert res value to 0 if department does not match"""
+        for doc_index in range(len(res.data)):
+            if department != self.get_doc_department(doc_index):
+                res.data[doc_index] = 0 
+        return res
+
+    
+    def closest_docs(self, query_department, k=1):
         """Closest docs by dot product between query and documents
         in tfidf weighted word vector space.
         """
+        query_department = query_department.split("*#*#*")
+        query = query_department[0]
+        department = query_department[1]
         spvec = self.text2spvec(query)
+        print(query)
+        print(spvec)
         res = spvec * self.doc_mat
+        res = self.filter_res(res, department)
 
         if len(res.data) <= k:
             o_sort = np.argsort(-res.data)
@@ -69,13 +88,16 @@ class TfidfDocRanker(object):
         doc_ids = [self.get_doc_id(i) for i in res.indices[o_sort]]
         return doc_ids, doc_scores
 
-    def batch_closest_docs(self, queries, k=1, num_workers=None):
+    def batch_closest_docs(self, queries, departments, k=1, num_workers=None):
         """Process a batch of closest_docs requests multithreaded.
         Note: we can use plain threads here as scipy is outside of the GIL.
         """
         with ThreadPool(num_workers) as threads:
             closest_docs = partial(self.closest_docs, k=k)
-            results = threads.map(closest_docs, queries)
+            queries_departments = []
+            for query, department in zip(queries, departments):
+                queries_departments.append(query + "*#*#*" + department)
+            results = threads.map(closest_docs, queries_departments)
         return results
 
     def parse(self, query):

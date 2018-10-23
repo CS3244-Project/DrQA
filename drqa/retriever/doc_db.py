@@ -43,6 +43,14 @@ class DocDB(object):
         cursor.close()
         return results
 
+    def get_doc_departments(self):
+        """Fetch all and departments of docs stored in the db."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT department FROM documents")
+        results = [r[0] for r in cursor.fetchall()]
+        cursor.close()
+        return results
+    
     def get_doc_text(self, doc_id):
         """Fetch the raw text of the doc for 'doc_id'."""
         cursor = self.connection.cursor()

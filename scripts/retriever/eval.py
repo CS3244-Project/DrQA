@@ -118,12 +118,15 @@ if __name__ == '__main__':
     logger.info('Reading data ...')
     questions = []
     answers = []
+    departments = []
     for line in open(args.dataset):
         data = json.loads(line)
         question = data['question']
         answer = data['answer']
+        department = data['department']
         questions.append(question)
         answers.append(answer)
+        departments.append(department)
 
     # get the closest docs for each question.
     logger.info('Initializing ranker...')
@@ -131,7 +134,7 @@ if __name__ == '__main__':
 
     logger.info('Ranking...')
     closest_docs = ranker.batch_closest_docs(
-        questions, k=args.n_docs, num_workers=args.num_workers
+        questions, departments, k=args.n_docs, num_workers=args.num_workers
     )
     answers_docs = zip(answers, closest_docs)
 

@@ -101,7 +101,7 @@ def store_contents(data_path, save_path, preprocess, num_workers=None):
     logger.info('Reading into database...')
     conn = sqlite3.connect(save_path)
     c = conn.cursor()
-    c.execute("CREATE TABLE documents (id PRIMARY KEY, text);")
+    c.execute("CREATE TABLE documents (id PRIMARY KEY, text, department);")
 
     workers = ProcessPool(num_workers, initializer=init, initargs=(preprocess,))
     files = [f for f in iter_files(data_path)]
@@ -109,7 +109,7 @@ def store_contents(data_path, save_path, preprocess, num_workers=None):
     with tqdm(total=len(files)) as pbar:
         for pairs in tqdm(workers.imap_unordered(get_contents, files)):
             count += len(pairs)
-            c.executemany("INSERT INTO documents VALUES (?,?)", pairs)
+            c.executemany("INSERT INTO documents VALUES (?,?,?)", pairs)
             pbar.update()
     logger.info('Read %d docs.' % count)
     logger.info('Committing...')

@@ -93,6 +93,7 @@ def get_count_matrix(args, db, db_opts):
     db_class = retriever.get_class(db)
     with db_class(**db_opts) as doc_db:
         doc_ids = doc_db.get_doc_ids()
+        doc_departments = doc_db.get_doc_departments()
     DOC2IDX = {doc_id: i for i, doc_id in enumerate(doc_ids)}
 
     # Setup worker pool
@@ -123,7 +124,7 @@ def get_count_matrix(args, db, db_opts):
         (data, (row, col)), shape=(args.hash_size, len(doc_ids))
     )
     count_matrix.sum_duplicates()
-    return count_matrix, (DOC2IDX, doc_ids)
+    return count_matrix, (DOC2IDX, doc_ids, doc_departments)
 
 
 # ------------------------------------------------------------------------------
