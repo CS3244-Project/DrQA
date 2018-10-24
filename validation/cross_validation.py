@@ -12,9 +12,8 @@ pre_name = args[-2]
 
 scores = np.zeros((n_fold,11))
 
-header = ["F1_dev","EM_dev","F1_tr","EM_tr",
-            "S_Dev","E_Dev","Ex_Dev",
-            "S_tr","E_tr","Ex_tr","T_Loss"]
+header = ["F1_dev","EM_dev","S_Dev","E_Dev","Ex_Dev",
+	  "F1_tr","EM_tr","S_tr","E_tr","Ex_tr","T_Loss"]
 with open("validation/cross_validation_result.txt",'w') as saveFile:
 	saveFile.write(",".join(header)+'\n')
 for i in range(1,n_fold+1):
@@ -26,16 +25,15 @@ for i in range(1,n_fold+1):
         #        CMD = CMD +" &> /dev/null"
 
 	#subprocess('bash','-c',CMD)
-	with open("validation/log_validation.txt",'r') as log:
-		line = log.readline().split(" ")
+	with open("validation/log_cross_validation.txt",'r') as log:
+		line = log.readline().split(" ")[1:]
 		scores[i-1,:] = list(map(lambda x:round(float(x),2),line))
 		with open('validation/cross_validation_result.txt','a') as saveFile:
 			saveFile.write(",".join(
 				list(map(lambda x:str(round(float(x),2)),line)))+"\n")
 print("Scores: ")
-print("F1_dev","EM_dev","F1_tr","EM_tr",
-            "S_Dev","E_Dev","Ex_Dev",
-            "S_tr","E_tr","Ex_tr","T_Loss")
+print("F1_dev","EM_dev","S_Dev","E_Dev","Ex_Dev",
+      "F1_tr","EM_tr","S_tr","E_tr","Ex_tr","T_Loss")
 
 print(scores)
 print("Average Score: ")
