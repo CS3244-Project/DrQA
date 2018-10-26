@@ -27,18 +27,5 @@ for i in range(1,n_fold+1):
 	CMD += "--train-json folds/" + pre_name +"_train_"+str(i)+".json "
 	CMD += "--dev-json folds/" + pre_name +"_dev_"+str(i)+".json "
 	CMD += "--model-dir " + model_dir + "fold_{}".format(i) + "/"
-        #if hide_output:
-        #        CMD = CMD +" &> /dev/null"
 	print(CMD)
 	subprocess.call(['bash','-c',CMD])
-print("Scores: ")
-print("F1_dev","EM_dev","S_Dev","E_Dev","Ex_Dev",
-      "F1_tr","EM_tr","S_tr","E_tr","Ex_tr","T_Loss")
-
-print(scores)
-print("Average Score: ")
-print(np.mean(scores,axis=0))
-with open('validation/cross_validation_result.txt','a') as saveFile:
-	saveFile.write("Average :\n")
-	saveFile.write(",".join([str(round(i,2)) for i in np.mean(scores,axis=0)]))	
-	
