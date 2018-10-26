@@ -199,7 +199,7 @@ if __name__ == "__main__":
 		utils.write2csv(train_dataset, args.train_output, constants.note_tsv_header)
 		utils.write2csv(dev_dataset, args.dev_output, constants.note_tsv_header)
 	else:
-		kf = KFold(n_splits=args.cross_validation_fold)
+		kf = KFold(n_splits=args.cross_validation_fold, shuffle=True)
 		count = 1
 		for train_index, test_index in kf.split(lecture_note_dataset):
 			print("Train: ", train_index,"Test: ",test_index)

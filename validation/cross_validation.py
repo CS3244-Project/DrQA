@@ -1,11 +1,13 @@
 import sys
 import subprocess
 import numpy as np
+import os
 #### Last two argument should be number of pre_name (mturk_self) and nfold (10)
 
 hide_output = True
 args = sys.argv
 cmd = " ".join(args[1:-3])
+print(cmd)
 
 n_fold = int(args[-1])
 pre_name = args[-2]
@@ -18,21 +20,17 @@ header = ["F1_dev","EM_dev","S_Dev","E_Dev","Ex_Dev",
 with open("validation/cross_validation_result.txt",'w') as saveFile:
 	saveFile.write(",".join(header)+'\n')
 for i in range(1,n_fold+1):
-	CMD ="python script/reader/train.py " + cmd +" "
+	subprocess.call(['bash', '-c', "mkdir " + model_dir + "fold_{}".format(i)])
+	CMD ="python scripts/reader/train.py " + cmd +" "
 	CMD += "--train-file folds/" + pre_name + "_train_"+ str(i)+"-processed-corenlp.txt "
 	CMD += "--dev-file folds/" + pre_name +"_dev_"+str(i)+"-processed-corenlp.txt "
-	CMD += "--dev-json folds/" + pre_name +"_dev_"+str(i)+".json"
+	CMD += "--train-json folds/" + pre_name +"_train_"+str(i)+".json "
+	CMD += "--dev-json folds/" + pre_name +"_dev_"+str(i)+".json "
 	CMD += "--model-dir " + model_dir + "fold_{}".format(i) + "/"
         #if hide_output:
         #        CMD = CMD +" &> /dev/null"
-
+	print(CMD)
 	subprocess.call(['bash','-c',CMD])
-	with open("validation/log_cross_validation.txt",'r') as log:
-		line = log.readline().split(" ")[1:]
-		scores[i-1,:] = list(map(lambda x:round(float(x),2),line))
-		with open('validation/cross_validation_result.txt','a') as saveFile:
-			saveFile.write(",".join(
-				list(map(lambda x:str(round(float(x),2)),line)))+"\n")
 print("Scores: ")
 print("F1_dev","EM_dev","S_Dev","E_Dev","Ex_Dev",
       "F1_tr","EM_tr","S_tr","E_tr","Ex_tr","T_Loss")
