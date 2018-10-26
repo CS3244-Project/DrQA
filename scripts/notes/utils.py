@@ -3,7 +3,13 @@ import csv
 import ntpath
 import re
 import requests
+import subprocess
 import uuid
+
+def run_cmd(cmd, verbose=True):
+    if verbose:
+        print(cmd)
+    subprocess('bash', '-c', cmd)
 
 def normalize(s):
 	s = s.lower()
