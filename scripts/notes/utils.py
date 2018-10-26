@@ -28,6 +28,9 @@ def capture_regex(doc, mystr, squash=True):
 
 def get_gdrive_id(url):
 	m = re.search('https://drive.google.com/file/d/(.+?)/view\?usp=sharing', url)
+	if m:
+		return m.group(1)
+	m = re.search('https://drive.google.com/open\?id\=(.+?)$', url)
 	return m.group(1) if m else "default"
 
 def is_similar_str(str1, str2, threshold=0.8):
