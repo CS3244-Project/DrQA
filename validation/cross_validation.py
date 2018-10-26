@@ -5,11 +5,11 @@ import numpy as np
 
 hide_output = True
 args = sys.argv
-cmd = " ".join(args[1:-2])
+cmd = " ".join(args[1:-3])
 
-model_dir
 n_fold = int(args[-1])
 pre_name = args[-2]
+model_dir = args[-3]
 
 scores = np.zeros((n_fold,11))
 
@@ -22,6 +22,7 @@ for i in range(1,n_fold+1):
 	CMD += "--train-file folds/" + pre_name + "_train_"+ str(i)+"-processed-corenlp.txt "
 	CMD += "--dev-file folds/" + pre_name +"_dev_"+str(i)+"-processed-corenlp.txt "
 	CMD += "--dev-json folds/" + pre_name +"_dev_"+str(i)+".json"
+	CMD += "--model-dir " + model_dir + "fold_{}".format(i) + "/"
         #if hide_output:
         #        CMD = CMD +" &> /dev/null"
 
