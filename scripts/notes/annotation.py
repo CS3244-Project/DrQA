@@ -2,6 +2,7 @@ import argparse
 import constants
 import csv
 import json
+import os
 import utils
 
 def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
@@ -60,12 +61,20 @@ def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
 	csv_file_in.close()
 	return data
 
+def parse_and_write(input, output):
+	parsed = parse_annotation(input)
+	with open(output, 'w') as f:
+		json.dump(parsed, f)
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('input', type=str)
 	parser.add_argument('output', type=str)
+	parser.add_argument('--use-fold', type=bool)
 	args = parser.parse_args()
 
-	parsed = parse_annotation(args.input)
-	with open(args.output, 'w') as f:
-		json.dump(parsed, f)
+	if args.use_fold:
+		for file_name in os.listdir(args.input):
+			parse_and_write(os.path.join(args.input, file_name), os.path.join(args.output, file_name))
+	else:
+		parse_and_write(args.input, args.output)
