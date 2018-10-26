@@ -9,7 +9,7 @@ import uuid
 def run_cmd(cmd, verbose=True):
     if verbose:
         print(cmd)
-    subprocess('bash', '-c', cmd)
+    subprocess.call(['bash', '-c', cmd])
 
 def normalize(s):
 	s = s.lower()

@@ -7,6 +7,7 @@ hide_output = True
 args = sys.argv
 cmd = " ".join(args[1:-2])
 
+model_dir
 n_fold = int(args[-1])
 pre_name = args[-2]
 
@@ -24,7 +25,7 @@ for i in range(1,n_fold+1):
         #if hide_output:
         #        CMD = CMD +" &> /dev/null"
 
-	#subprocess('bash','-c',CMD)
+	subprocess.call(['bash','-c',CMD])
 	with open("validation/log_cross_validation.txt",'r') as log:
 		line = log.readline().split(" ")[1:]
 		scores[i-1,:] = list(map(lambda x:round(float(x),2),line))

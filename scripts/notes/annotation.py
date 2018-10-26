@@ -3,6 +3,7 @@ import constants
 import csv
 import json
 import os
+import re
 import utils
 
 def parse_annotation(file_path, start_row=1, verbose=True, version='1.1'):
@@ -70,11 +71,13 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('input', type=str)
 	parser.add_argument('output', type=str)
-	parser.add_argument('--use-fold', type=bool)
+	parser.add_argument('--use-folds', type=bool)
 	args = parser.parse_args()
 
-	if args.use_fold:
+	if args.use_folds:
 		for file_name in os.listdir(args.input):
-			parse_and_write(os.path.join(args.input, file_name), os.path.join(args.output, file_name))
+			m = re.search('^(.+?)\.csv$', file_name)
+			name = m.group(1) if m else 'default'
+			parse_and_write(os.path.join(args.input, file_name), os.path.join(args.output, name + '.json'))
 	else:
 		parse_and_write(args.input, args.output)
