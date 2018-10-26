@@ -15,6 +15,8 @@ import sys
 import subprocess
 import logging
 
+from torch.autograd import Variable
+import torch.nn.functional as F
 
 from drqa.reader import utils, vector, config, data
 from drqa.reader import DocReader
@@ -62,7 +64,11 @@ def add_train_args(parser):
                          help='Batch size for training')
     runtime.add_argument('--test-batch-size', type=int, default=128,
                          help='Batch size during validation/testing')
-
+    ##### Edited for Train test F1
+    runtime.add_argument('--test-official-train', type=bool, default=True)
+    runtime.add_argument('--show-dev-loss', type=bool, default=True)
+    #runtime.add_argument('--freeze-doc-rnn',type='bool', default=False)
+    #runtime.add_argument('--freeze-question-rnn',type='bool',default=False)
     # Files
     files = parser.add_argument_group('Filesystem')
     files.add_argument('--model-dir', type=str, default=MODEL_DIR,
@@ -151,6 +157,8 @@ def set_defaults(args):
     # Set log + model file names
     args.log_file = os.path.join(args.model_dir, args.model_name + '.txt')
     args.model_file = os.path.join(args.model_dir, args.model_name + '.mdl')
+    args.loss_file = os.path.join(args.model_dir,args.model_name +'_loss.txt')
+    args.best_loss_file = os.path.join(args.model_dir,args.model_name +"_best.txt")
 
     # Embeddings options
     if args.embedding_file:
@@ -210,24 +218,43 @@ def init_from_scratch(args, train_exs, dev_exs):
 # ------------------------------------------------------------------------------
 
 
-def train(args, data_loader, model, global_stats):
+def train(args, data_loader, model, global_stats,dev_loader):
     """Run through one epoch of model training with the provided data loader."""
     # Initialize meters + timers
     train_loss = utils.AverageMeter()
     epoch_time = utils.Timer()
-
+    
     # Run one epoch
     for idx, ex in enumerate(data_loader):
         train_loss.update(*model.update(ex))
-
+        global_stats['Loss_Train'] = float(train_loss.avg)
         if idx % args.display_iter == 0:
             logger.info('train: Epoch = %d | iter = %d/%d | ' %
                         (global_stats['epoch'], idx, len(data_loader)) +
                         'loss = %.2f | elapsed time = %.2f (s)' %
                         (train_loss.avg, global_stats['timer'].time()))
-            global_stats['T_Loss'] = float(train_loss.avg)
             train_loss.reset()
-
+    
+    ####### Fix this later    
+    if args.show_dev_loss:
+        dev_loss = utils.AverageMeter()
+        for idx,ex in enumerate(dev_loader):
+            if  args.cuda:
+                inputs = [e if e is None else Variable(e.cuda(async=True)) for e in ex[:5]]
+                target_s = Variable(ex[5].cuda(async=True))
+                target_e = Variable(ex[6].cuda(async=True))
+            else:
+                print("No cudaaa")
+                inputs = [e if e is None else e for e in ex[:5]]
+                target_s = ex[5]
+                target_e = ex[6]            
+            score_s, score_e = model.network(*inputs)
+            loss = F.nll_loss(score_s, target_s) + F.nll_loss(score_e, target_e)
+            dev_loss.update(loss.data[0],ex[0].size(0))
+           
+        global_stats['Loss_Dev'] = float(dev_loss.avg)
+                
+    logger.info('Epoch %d: Train_Loss: %.3f Dev_Loss: %.3f' % (global_stats['epoch'], global_stats["Loss_Train"],global_stats["Loss_Dev"]))
     logger.info('train: Epoch %d done. Time for epoch = %.2f (s)' %
                 (global_stats['epoch'], epoch_time.time()))
 
@@ -280,9 +307,9 @@ def validate_unofficial(args, data_loader, model, global_stats, mode):
         global_stats['E_Train']= end_acc.avg
         global_stats['Exact_Train'] = exact_match.avg
     else:
-        global_stats['S_Dev_tmp']= start_acc.avg
-        global_stats['E_Dev_tmp']= end_acc.avg
-        global_stats['Exact_Dev_tmp'] = exact_match.avg
+        global_stats['S_Dev']= start_acc.avg
+        global_stats['E_Dev']= end_acc.avg
+        global_stats['Exact_Dev'] = exact_match.avg
 
     return {'exact_match': exact_match.avg}
 
@@ -377,10 +404,8 @@ def main(args):
     logger.info('Load data files')
     train_exs = utils.load_data(args, args.train_file, skip_no_answer=True)
     logger.info('Num train examples = %d' % len(train_exs))
-    dev_exs = utils.load_data(args, args.dev_file)
+    dev_exs = utils.load_data(args, args.dev_file, skip_no_answer = True)
     logger.info('Num dev examples = %d' % len(dev_exs))
-
-    train_exs_with_ans = utils.load_data(args,args.train_file)
 
     # If we are doing offician evals then we need to:
     # 1) Load the original text to retrieve spans from offsets.
@@ -390,7 +415,7 @@ def main(args):
         dev_offsets = {ex['id']: ex['offsets'] for ex in dev_exs}
         dev_answers = utils.load_answers(args.dev_json)
         train_texts = utils.load_text(args.train_json)
-        train_offsets = {ex['id']: ex['offsets'] for ex in train_exs_with_ans}
+        train_offsets = {ex['id']: ex['offsets'] for ex in train_exs}
         train_answers = utils.load_answers(args.train_json)
 
 
@@ -468,7 +493,7 @@ def main(args):
         collate_fn=vector.batchify,
         pin_memory=args.cuda,
     )
-    dev_dataset = data.ReaderDataset(dev_exs, model, single_answer=False)
+    dev_dataset = data.ReaderDataset(dev_exs, model, single_answer=True)
     if args.sort_by_len:
         dev_sampler = data.SortedBatchSampler(dev_dataset.lengths(),
                                               args.test_batch_size,
@@ -494,17 +519,19 @@ def main(args):
     # TRAIN/VALID LOOP
     logger.info('-' * 100)
     logger.info('Starting training...')
-    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,
-             'F1_dev': 0,'EM_dev':0,
-	     'F1_train':0,'EM_train':0,
-             'S_Dev':0,'E_Dev':0,'Exact_Dev':0,
-             'S_Train':0,'E_Train':0,'Exact_Train':0,"T_Loss":0,
-             'S_Dev_tmp':0,'E_Dev_tmp':0,'Exact_Dev_tmp':0}
+    stats = {'timer': utils.Timer(), 'epoch': 0, 'best_valid': 0,'epoch_best':0,
+             'F1_Dev_best':0,'EM_Dev_best':0,'S_Dev_best':0,'E_Dev_best':0,'Exact_Dev_best':0,
+             'F1_Dev': 0,'EM_Dev':0, 'S_Dev':0,'E_Dev':0,'Exact_Dev':0,"Loss_Dev":0,
+	     'F1_Train':0,'EM_Train':0,'S_Train':0,'E_Train':0,'Exact_Train':0,"Loss_Train":0}
+    loss_file = open(args.loss_file,'w')
+    header = ['epoch','F1_Dev','EM_Dev', 'S_Dev','E_Dev','Exact_Dev',"Loss_Dev",
+             'F1_Train','EM_Train','S_Train','E_Train','Exact_Train',"Loss_Train"]        
+    loss_file.write(",".join(header) +"\n")
     for epoch in range(start_epoch, args.num_epochs):
         stats['epoch'] = epoch
 
         # Train
-        train(args, train_loader, model, stats)
+        train(args, train_loader, model, stats, dev_loader)
 
         # Validate unofficial (train)
         Train_result = validate_unofficial(args, train_loader, model, stats, mode='train')
@@ -515,31 +542,43 @@ def main(args):
         # Validate official
         if args.official_eval:
             result = validate_official(args, dev_loader, model, stats,
-                                       dev_offsets, dev_texts, dev_answers)
-            #result_train_official  = validate_official(args, train_loader, model, stats,
-            #                          train_offsets, train_texts, train_answers,mode ='train')
+                                       dev_offsets, dev_texts, dev_answers, mode='dev')
+            stats['F1_Dev'] = result["f1"]
+            stats['EM_Dev'] = result["exact_match"]
+        if args.test_official_train:    
+            result_train_official  = validate_official(args, train_loader, model, stats,
+                                      		train_offsets, train_texts, train_answers, mode='train')
 
-            #stats['F1_train'] = result_train_official["f1"]
-            #stats['EM_train'] = result_train_official["exact_match"]
+            stats['F1_Train'] = result_train_official["f1"]
+            stats['EM_Train'] = result_train_official["exact_match"]
         # Save best valid
+        toWrite = []
+        for key,value in stats.items():
+            if( key !='timer' and key != 'best_valid' and key[-4:] !='best'):
+                toWrite.append(str(round(value,3)))
+        toWrite = ",".join(toWrite) +"\n"
+        loss_file.write(toWrite)
+ 
         if result[args.valid_metric] > stats['best_valid']:
             logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
                         (args.valid_metric, result[args.valid_metric],
                          stats['epoch'], model.updates))
             model.save(args.model_file)
             stats['best_valid'] = result[args.valid_metric]
-            stats['F1_dev'] = result["f1"]
-            stats['EM_dev'] = result["exact_match"]
-            stats['S_Dev'] = stats['S_Dev_tmp']	
-            stats['E_Dev'] = stats['E_Dev_tmp']	
-            stats['Exact_Dev'] = stats['Exact_Dev_tmp']
-	
-    with open('validation/log_validation.txt','w') as logFile:
-        toWrite = []
+            stats['F1_Dev_best'] = result["f1"]
+            stats['EM_Dev_best'] = result["exact_match"]
+            stats['S_Dev_best'] = stats['S_Dev']	
+            stats['E_Dev_best'] = stats['E_Dev']	
+            stats['Exact_Dev_best'] = stats['Exact_Dev']
+            stats['epoch_best'] = stats['epoch']
+    loss_file.close()	
+    with open(args.best_loss_file,'w+') as logFile:
+        #head = ['epoch_best','F1_Dev_best','EM_Dev_best','S_Dev_best','E_Dev_best','Exact_Dev_best','F1_Train','EM_train','S_Train','E_Train','Exact_Train','Loss_Train']
+        toWrite =[]
         for key,value in stats.items():
-            if(key != "best_valid" and key != 'timer' and  key != 'epoch' and key[-3:] != 'tmp'):
-                toWrite.append(str(value))
-        toWrite = " ".join(toWrite)
+            if key[-4:] == 'best' or key[-5:] == "Train":
+                toWrite.append(str(round(value,3)))
+        toWrite = ",".join(toWrite)
         logFile.write(toWrite)
 
 if __name__ == '__main__':
