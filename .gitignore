@@ -5,3 +5,5 @@ data/
 *.tar.gz
 *.egg-info
 tmp/*
+./saved-tfidf
+
