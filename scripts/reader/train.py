@@ -500,47 +500,46 @@ def main(args):
              'S_Dev':0,'E_Dev':0,'Exact_Dev':0,
              'S_Train':0,'E_Train':0,'Exact_Train':0,"T_Loss":0,
              'S_Dev_tmp':0,'E_Dev_tmp':0,'Exact_Dev_tmp':0}
-    for epoch in range(start_epoch, args.num_epochs):
-        stats['epoch'] = epoch
+    with open('validation/log_validation.txt', 'w') as logFile:
+        for epoch in range(start_epoch, args.num_epochs):
+            stats['epoch'] = epoch
 
         # Train
-        train(args, train_loader, model, stats)
+            train(args, train_loader, model, stats)
 
         # Validate unofficial (train)
-        Train_result = validate_unofficial(args, train_loader, model, stats, mode='train')
+            Train_result = validate_unofficial(args, train_loader, model, stats, mode='train')
 
         # Validate unofficial (dev)
-        result = validate_unofficial(args, dev_loader, model, stats, mode='dev')
+            result = validate_unofficial(args, dev_loader, model, stats, mode='dev')
 
         # Validate official
-        if args.official_eval:
-            result = validate_official(args, dev_loader, model, stats,
-                                       dev_offsets, dev_texts, dev_answers)
-            result_train_official  = validate_official(args, train_loader, model, stats,
-                                       train_offsets, train_texts, train_answers,mode ='train')
-
-            stats['F1_train'] = result_train_official["f1"]
-            stats['EM_train'] = result_train_official["exact_match"]
+            if args.official_eval:
+                result = validate_official(args, dev_loader, model, stats,
+                                           dev_offsets, dev_texts, dev_answers)
+                result_train_official  = validate_official(args, train_loader, model, stats,
+                                           train_offsets, train_texts, train_answers,mode ='train')
+                stats['F1_train'] = result_train_official["f1"]
+                stats['EM_train'] = result_train_official["exact_match"]
         # Save best valid
-        if result[args.valid_metric] > stats['best_valid']:
-            logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
-                        (args.valid_metric, result[args.valid_metric],
-                         stats['epoch'], model.updates))
-            model.save(args.model_file)
-            stats['best_valid'] = result[args.valid_metric]
-            stats['F1_dev'] = result["f1"]
-            stats['EM_dev'] = result["exact_match"]
-            stats['S_Dev'] = stats['S_Dev_tmp']	
-            stats['E_Dev'] = stats['E_Dev_tmp']	
-            stats['Exact_Dev'] = stats['Exact_Dev_tmp']
-	
-    with open('validation/log_validation.txt','w') as logFile:
-        toWrite = []
-        for key,value in stats.items():
-            if(key != "best_valid" and key != 'timer' and  key != 'epoch' and key[-3:] != 'tmp'):
-                toWrite.append(str(value))
-        toWrite = " ".join(toWrite)
-        logFile.write(toWrite)
+            if result[args.valid_metric] > stats['best_valid']:
+                logger.info('Best valid: %s = %.2f (epoch %d, %d updates)' %
+                            (args.valid_metric, result[args.valid_metric],
+                             stats['epoch'], model.updates))
+                model.save(args.model_file)
+                stats['best_valid'] = result[args.valid_metric]
+                stats['F1_dev'] = result["f1"]
+                stats['EM_dev'] = result["exact_match"]
+                stats['S_Dev'] = stats['S_Dev_tmp']	
+                stats['E_Dev'] = stats['E_Dev_tmp']	
+                stats['Exact_Dev'] = stats['Exact_Dev_tmp']
+            toWrite = []
+            for key,value in stats.items():
+                 if(key != "best_valid" and key != 'timer' and  key != 'epoch' and key[-3:] != 'tmp'):
+                    toWrite.append(str(value))
+            toWrite = " ".join(toWrite)
+            logFile.write(toWrite)
+            logFile.write('\n')
 
 if __name__ == '__main__':
     # Parse cmdline args and setup environment
