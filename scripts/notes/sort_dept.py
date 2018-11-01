@@ -2,14 +2,14 @@ import constants
 import pickle
 import utils
 
-with open("ln.p") as f:
+with open("ln.p", "rb") as f:
 	dataset = pickle.load(f)
 
 dataset_dict = {}
 
 for data in dataset:
 	title, annotated_p, question, answer, dept, chapter = data
-	if dept is not in dataset_dict:
+	if dept not in dataset_dict:
 		dataset_dict[dept] = []
 	dataset_dict[dept].append(data)
 
