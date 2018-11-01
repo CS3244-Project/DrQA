@@ -1,1 +1,2 @@
-python scripts/reader/official_eval.py data/datasets/folds models/val_models/
+python validation/cross_validation_official_eval.py models/val_models data/datasets/folds
+python validation/cross_validation_official_eval.py models/val_models_simple data/datasets/folds

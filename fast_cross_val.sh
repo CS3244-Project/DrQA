@@ -1,1 +1,2 @@
-python validation/cross_validation.py --embedding-file glove.840B.300d.txt --tune-partial 1000 --model-name wsQA_single --pretrained models/pre_trained_single/single.mdl models/val_models/ mturk_self 10
+#python validation/cross_validation.py --embedding-file glove.840B.300d.txt --tune-partial 1000 --model-name wsQA_single --pretrained models/pre_trained_single/single.mdl models/val_models/ mturk_self 10
+python validation/cross_validation.py --embedding-file glove.6B.100d.txt --tune-partial 1000 --model-name wsQA_single_simple --pretrained models/pre_trained_single_simple/single_simple.mdl --embedding-dim 100 --hidden-size 64 --doc-layers 2 --question-layers 2 models/val_models_simple/ mturk_self 10
