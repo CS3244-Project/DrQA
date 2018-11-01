@@ -144,7 +144,7 @@ def eval_tfidf(dataset, model, doc_db, tokenizer, n_docs, num_workers, match):
     #     t=time.time() - start,
     # )
 
-	return sum(scores) / len(scores), len(scores)
+    return sum(scores) / len(scores), len(scores)
 
 
 if __name__ == '__main__':
