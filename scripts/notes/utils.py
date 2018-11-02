@@ -5,6 +5,7 @@ import re
 import requests
 import subprocess
 import uuid
+import os
 
 def run_cmd(cmd, verbose=True):
     if verbose:

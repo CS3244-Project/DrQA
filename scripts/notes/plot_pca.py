@@ -6,6 +6,7 @@ from utils import isfile, save_data, load_data
 import numpy as np
 from sklearn.decomposition import PCA
 import pickle
+import os
 
 def plot_pca_explained_var(user_matrix, comp_range, comp_step, img_path, pca_format):
     user_matrix = np.array(user_matrix)
@@ -40,9 +41,10 @@ def plot_pca_explained_var(user_matrix, comp_range, comp_step, img_path, pca_for
 if __name__ == "__main__":
 	data_file = "dept.p"
 	with open(data_file, "rb") as f:
-		data = pickle.load(data_file)
+		data, _, __= pickle.load(f)
 	data_matrix = []
 	for d in data:
+		print(d[0])
 		data_matrix.append(d[0])
 	plot_pca_explained_var(user_matrix=data_matrix,
                            comp_range=[10, 200], comp_step=10, img_path="pca_explained_variance.png", pca_format="pca_dir/pca_{}.pickle")
