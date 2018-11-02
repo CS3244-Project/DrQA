@@ -2,18 +2,8 @@ import csv, uuid
 import matplotlib; matplotlib.use('agg')
 import pylab as plt
 plt.ioff()
-from common_utils import isfile, save_data, load_data
-from build_dataset import build_drug_to_side_effects_dict, build_thread_to_drugs_dict
-from tokenize_utils import tokenize_raw_text, post_tokenizer
-from nlp_utils import split_side_effect_list
-from collections import Counter
-from gensim.models import phrases
-from gensim.models import KeyedVectors
-import nmt_constants
-from sklearn.model_selection import train_test_split
-import nlp_utils
+from utils import isfile, save_data, load_data
 import numpy as np
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import pickle
 

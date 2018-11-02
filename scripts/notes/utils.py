@@ -91,3 +91,25 @@ def download_gdrive(id, destination):
         response = session.get(URL, params = params, stream = True)
 
     save_response_content(response, destination)
+
+def save_data(path, py_object):
+    with open(path, 'wb') as f:
+        pickle.dump(py_object, f)
+
+
+# Load data from existing pickle
+def load_data(pickle_in):
+    with open(pickle_in, 'rb') as f:
+        contents = pickle.load(f)
+    return contents
+
+
+def isfile(path):
+    return os.path.isfile(path)
+
+
+def time_format(second):
+    h = second // 3600
+    m = ((second % 3600) // 60)
+    s = second % 60
+    return [h, m, s]
