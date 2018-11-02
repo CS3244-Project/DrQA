@@ -36,9 +36,15 @@ if __name__ == '__main__':
     logger.info('Reading data ...')
     questions = []
     contexts = []
+    ln_dataset = []
+    depts = []
     with open(args.dataset, "rb") as f:
-        questions, contexts, depts = pickle.load(f) 
-    assert len(questions) ==  len(contexts) and len(questions) == len(depts)
+        ln_dataset = pickle.load(f) 
+    for ln in ln_dataset:
+        if ln[1] not in contexts:
+            contexts.append(ln[1])
+        questions.append(ln[2])
+        depts.append(ln[4]) 
 
     # get the closest docs for each question.
     logger.info('Initializing ranker...')
@@ -60,7 +66,7 @@ if __name__ == '__main__':
         c_vec = ranker.text2spvec(contexts[i])
         dept_idx = dept2idx[depts[i]]
         dept_dataset.append([q_vec, dept_idx])
-        dept_dataset.append([v_vec, dept_idx])
+        dept_dataset.append([c_vec, dept_idx])
 
-    with open(args.output, "rb") as f:
-        pickle.dump(dept_dataset, f)
+    with open(args.output, "wb") as f:
+        pickle.dump((dept_dataset, dept2idx, idx2dept) , f)
