@@ -62,8 +62,8 @@ if __name__ == '__main__':
     dept_dataset = []
 
     for i in range(len(contexts)):
-        q_vec = ranker.text2spvec(questions[i])
-        c_vec = ranker.text2spvec(contexts[i])
+        q_vec = ranker.text2vec(questions[i])
+        c_vec = ranker.text2vec(contexts[i])
         dept_idx = dept2idx[depts[i]]
         dept_dataset.append([q_vec, dept_idx])
         dept_dataset.append([c_vec, dept_idx])
