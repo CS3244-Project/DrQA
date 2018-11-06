@@ -3,4 +3,5 @@
 # python scripts/reader/predict.py data/datasets/ln_dev.json --model models/csQA_single/csQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/csQA_single/
 # python scripts/reader/predict.py data/datasets/ln_dev.json --model models/wsQA_single/wsQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/wsQA_single/
 # python scripts/reader/predict.py data/datasets/ln_tokens_dev.json --model models/csQA_tokens_single/csQA_tokens_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/csQA_tokens_single/
-python scripts/reader/predict.py data/datasets/ln_tokens_dev.json --model models/wsQA_tokens_single/wsQA_tokens_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/wsQA_tokens_single/
+python scripts/reader/predict.py mturk_self_dev_9.json --model models/val_models/fold_4/wsQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/val_models/fold_4/ --no-cuda
+python scripts/reader/predict.py mturk_self_dev_9.json --model models/val_models/fold_5/wsQA_single.mdl  --embedding-file data/embeddings/glove.840B.300d.txt --official --out-dir models/val_models/fold_5/ --no-cuda

@@ -144,7 +144,7 @@ def eval_tfidf(dataset, model, doc_db, tokenizer, n_docs, num_workers, match):
     #     t=time.time() - start,
     # )
 
-    return sum(scores) / len(scores), len(scores)
+    return sum(scores), len(scores)
 
 
 if __name__ == '__main__':
@@ -171,14 +171,14 @@ if __name__ == '__main__':
 
     # start time
     start = time.time()
-    score, total = 0, 0
+    match, total = 0, 0
 
 
     for i in range(args.num_depts):
-    	s, t = eval_tfidf(args.dataset.format(i), args.model.format(i), args.doc_db.format(i), args.tokenizer, args.n_docs, args.num_workers, args.match)
-    	score += s * t
+    	m, t = eval_tfidf(args.dataset.format(i), args.model.format(i), args.doc_db.format(i), args.tokenizer, args.n_docs, args.num_workers, args.match)
+    	match += m
     	total += t
 
-    print("Accuracy: {}".format(score / total))
+    print("Accuracy: {}".format(match / total))
 
     
