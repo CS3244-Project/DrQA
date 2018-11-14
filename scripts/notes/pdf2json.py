@@ -3,6 +3,7 @@ import pdf_reader
 import utils
 import os
 import subprocess
+
 def pdf2json(file_paths, json_out, squash=True, titles=None):
 	data = {'data': [], 'version': '1.1'}
 
@@ -27,12 +28,20 @@ def pdf2json(file_paths, json_out, squash=True, titles=None):
 
 if __name__ == "__main__":
 	#pdf2json(["data/notes/Photosynthesis.pdf", "data/notes/Plant Physiology.pdf"], "out.json")
+	hide_output = False
 	pdfs = []
 	for pdf in os.listdir("step_demo/pdfs/"):
 		pdfs.append("step_demo/pdfs/"+pdf)
 	pdf2json(pdfs,"step_demo/combined_pdfs/combined.json")
-	subprocess.call(["bash","-c","rm step_demo/db/*"])
-	subprocess.call(["bash","-c","python scripts/retriever/build_db.py step_demo/combined_pdfs/combined.json step_demo/db/LN.db --preprocess scripts/retriever/prep_lecture_note.py"])
-	subprocess.call(["bash","-c","python scripts/retriever/build_tfidf.py step_demo/db/LN.db step_demo/retriever_model/"])
-	subprocess.call(["bash","-c","python scripts/pipeline/interactive.py --reader-model step_demo/reader_model/STeP_LNQA.mdl --retriever-model step_demo/retriever_model/LN-tfidf-ngram=2-hash=16777216-tokenizer=simple.npz --doc-db step_demo/db/LN.db"])
+	if hide_output:
+		subprocess.call(["bash","-c","rm step_demo/db/*" +" &> /dev/null"])
+		subprocess.call(["bash","-c","python scripts/retriever/build_db.py step_demo/combined_pdfs/combined.json step_demo/db/LN.db --preprocess scripts/retriever/prep_lecture_note.py"+" &> /dev/null"])
+		subprocess.call(["bash","-c","python scripts/retriever/build_tfidf.py step_demo/db/LN.db step_demo/retriever_model/"+" &> /dev/null"])
+	else:
+		subprocess.call(["bash","-c","rm step_demo/db/*"])
+		subprocess.call(["bash","-c","python scripts/retriever/build_db.py step_demo/combined_pdfs/combined.json step_demo/db/LN.db --preprocess scripts/retriever/prep_lecture_note.py"])
+		subprocess.call(["bash","-c","python scripts/retriever/build_tfidf.py step_demo/db/LN.db step_demo/retriever_model/"])
+	
+
+	subprocess.call(["bash","-c","python scripts/pipeline/interactive.py --reader-model step_demo/reader_model/STeP_LNQA.mdl --retriever-model step_demo/retriever_model/LN-tfidf-ngram=2-hash=16777216-tokenizer=simple.npz --doc-db step_demo/db/LN.db --no-cuda"])
 
