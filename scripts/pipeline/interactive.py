@@ -100,6 +100,17 @@ def process(question, candidates=None, top_n=1, n_docs=5):
         print('[ Doc = %s ]' % p['doc_id'])
         print(output + '\n')
 
+def start():
+    while True:
+        question = input("Please key in a question: ").strip()
+        if question == "q":
+            break
+        else:
+            num = input("Number of desired answers?: ").strip()
+            if num == "":
+               num = "1"
+            process(question,candidates=None,top_n=int(num),n_docs=5)
+        
 
 banner = """
 Interactive DrQA

@@ -177,6 +177,12 @@ class DocReader(object):
         if self.args.fix_embeddings:
             for p in self.network.embedding.parameters():
                 p.requires_grad = False
+        #if self.args.freeze_doc_rnn:
+        #    for p in self.network.doc_rnn.parameters():
+        #        p.requires_grad = False
+        #if self.args.freeze_question_rnn:
+        #    for p in self.network.question_rnn.paramters():
+        #        p.requires_grad = False
         parameters = [p for p in self.network.parameters() if p.requires_grad]
         if self.args.optimizer == 'sgd':
             self.optimizer = optim.SGD(parameters, self.args.learning_rate,
